@@ -1,9 +1,11 @@
-import { Repairer } from "repairer";
+import { BaseCreep } from "basecreep";
+import { Harvester } from "harvester";
 import { random } from "lodash";
 
-export class Builder {
+export class Builder extends BaseCreep {
 
     public constructor() {
+        super();
     }
 
     public update(creep: Creep): void {
@@ -49,9 +51,16 @@ export class Builder {
                         creep.moveTo(building.pos.x, building.pos.y);
                     }
                 } else {
-                    // if there are no buildings to build, then go fix something!
-                    let rep = new Repairer();
-                    rep.update(creep);
+
+                    // if there are no buildings to build, put energy into extensions
+                    let ext = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_EXTENSION && m.store.energy < 50)[0] as StructureExtension;
+                    if (ext != null) {
+                        // If there is room in an extension, fill it first!
+                        if (creep.transfer(ext, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(ext.pos.x, ext.pos.y);
+                        }
+                    }
+
                 }
             } else {
                 creep.memory.state = "MINING";
@@ -60,28 +69,28 @@ export class Builder {
         }
     }
 
-    private closestConstructionSite(creep: Creep): ConstructionSite | null {
-        let building : ConstructionSite | null = null;
-        let distance : number = Number.MAX_VALUE;
-        let incompleteBuildings = _.filter(creep.room.find(FIND_MY_CONSTRUCTION_SITES), (s) => s.progress < s.progressTotal);
-        if (incompleteBuildings != null) {
+    // private closestConstructionSite(creep: Creep): ConstructionSite | null {
+    //     let building : ConstructionSite | null = null;
+    //     let distance : number = Number.MAX_VALUE;
+    //     let incompleteBuildings = _.filter(creep.room.find(FIND_MY_CONSTRUCTION_SITES), (s) => s.progress < s.progressTotal);
+    //     if (incompleteBuildings != null) {
 
-            for (let b = 0; b < incompleteBuildings.length; b++) {
-                let d = this.dist(creep.pos, incompleteBuildings[b].pos);
-                if (d < distance) {
-                    distance = d;
-                    building = incompleteBuildings[b];
-                }
-            }
-        }
+    //         for (let b = 0; b < incompleteBuildings.length; b++) {
+    //             let d = this.dist(creep.pos, incompleteBuildings[b].pos);
+    //             if (d < distance) {
+    //                 distance = d;
+    //                 building = incompleteBuildings[b];
+    //             }
+    //         }
+    //     }
 
-        // console.log("Min distance: " + distance);
+    //     // console.log("Min distance: " + distance);
 
-        return building;
-    }
+    //     return building;
+    // }
 
-    private dist(a: RoomPosition, b: RoomPosition): number {
-        let sqrDist = Math.abs(a.x * a.x - b.x * b.x + a.y * a.y - b.y * b.y);
-        return Math.sqrt(sqrDist);
-    }
+    // private dist(a: RoomPosition, b: RoomPosition): number {
+    //     let sqrDist = Math.abs(a.x * a.x - b.x * b.x + a.y * a.y - b.y * b.y);
+    //     return Math.sqrt(sqrDist);
+    // }
 }

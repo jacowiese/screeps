@@ -38,8 +38,8 @@ export class Harvester {
                     if (creep.transfer(ext, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                         creep.moveTo(ext.pos.x, ext.pos.y);
                     }
-                }
-                else {
+                } else {
+
                     // put energy into container if there are any
                     let cntnr = _.filter(creep.room.find(FIND_STRUCTURES), (k) => k.structureType == STRUCTURE_CONTAINER && k.store.getFreeCapacity(RESOURCE_ENERGY) > 0)[0];
                     if (cntnr != null) {
@@ -48,21 +48,32 @@ export class Harvester {
                         }
                     } else {
 
+                        // if all places are full, put the energy in the spawn
                     let spawn = creep.room.find(FIND_MY_SPAWNS)[0];
                     if (spawn == null) {
                         console.log("Harvester cannot find room spawn!");
                         return;
                     }
 
-                        // upgrade controller
-                        let controller = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_CONTROLLER)[0] as StructureController;
-                        if (controller == null) {
-                            console.log("Harvester cannot find room controller!");
-                            return;
+                    if (spawn.energy < spawn.energyCapacity) {
+                        // Put energy into spawn for new creeps!
+
+                        if (creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(spawn.pos.x, spawn.pos.y);
                         }
 
-                        if (creep.upgradeController(controller) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(controller.pos.x, controller.pos.y);
+                    } else {
+
+                            // upgrade controller
+                            let controller = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_CONTROLLER)[0] as StructureController;
+                            if (controller == null) {
+                                console.log("Harvester cannot find room controller!");
+                                return;
+                            }
+
+                            if (creep.upgradeController(controller) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(controller.pos.x, controller.pos.y);
+                            }
                         }
                     }
                 }
