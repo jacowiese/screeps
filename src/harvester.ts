@@ -20,6 +20,12 @@ export class Harvester {
                         sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
                     }
                     creep.memory.target =  sourceId;
+                    // creep.memory.flipflop = random(0, 1, false);
+
+                    if (creep.memory.flipflop == undefined || creep.memory.flipflop == 0)
+                        creep.memory.flipflop = 1;
+                    else
+                        creep.memory.flipflop = 0;
                 }
 
                 let sourceNode = Game.getObjectById(creep.memory.target) as Source;
@@ -32,13 +38,18 @@ export class Harvester {
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 
-                let ext = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_EXTENSION && m.store.energy < 50)[0] as StructureExtension;
-                if (ext != null) {
-                    // If there is room in an extension, fill it first!
-                    if (creep.transfer(ext, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(ext.pos.x, ext.pos.y);
+                // put the energy in an extension
+                if (creep.memory.flipflop == undefined || creep.memory.flipflop == 0) {
+                    let ext = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_EXTENSION && m.store.energy < 50)[0] as StructureExtension;
+                    if (ext != null) {
+                        // If there is room in an extension, fill it first!
+                        if (creep.transfer(ext, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(ext.pos.x, ext.pos.y);
+                        }
                     }
-                } else {
+                }
+
+                if (creep.memory.flipflop == 1) {
 
                     // put energy into container if there are any
                     let cntnr = _.filter(creep.room.find(FIND_STRUCTURES), (k) => k.structureType == STRUCTURE_CONTAINER && k.store.getFreeCapacity(RESOURCE_ENERGY) > 0)[0];
@@ -48,21 +59,21 @@ export class Harvester {
                         }
                     } else {
 
-                        // if all places are full, put the energy in the spawn
-                    let spawn = creep.room.find(FIND_MY_SPAWNS)[0];
-                    if (spawn == null) {
-                        console.log("Harvester cannot find room spawn!");
-                        return;
-                    }
-
-                    if (spawn.energy < spawn.energyCapacity) {
-                        // Put energy into spawn for new creeps!
-
-                        if (creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(spawn.pos.x, spawn.pos.y);
+                            // if all places are full, put the energy in the spawn
+                        let spawn = creep.room.find(FIND_MY_SPAWNS)[0];
+                        if (spawn == null) {
+                            console.log("Harvester cannot find room spawn!");
+                            return;
                         }
 
-                    } else {
+                        if (spawn.energy < spawn.energyCapacity) {
+                            // Put energy into spawn for new creeps!
+
+                            if (creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(spawn.pos.x, spawn.pos.y);
+                            }
+
+                        } else {
 
                             // upgrade controller
                             let controller = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_CONTROLLER)[0] as StructureController;
@@ -83,5 +94,4 @@ export class Harvester {
             }
         }
     }
-
 }

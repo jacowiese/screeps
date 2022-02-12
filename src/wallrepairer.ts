@@ -1,8 +1,10 @@
+import { BaseCreep } from "basecreep";
 import { random } from "lodash";
 
-export class WallRepairer {
+export class WallRepairer extends BaseCreep {
 
     public constructor() {
+        super();
     }
 
     public update(creep: Creep): void {
@@ -18,6 +20,7 @@ export class WallRepairer {
                 } else {
 
                     // do nothing - only get energy from a container
+                    this.moveToRandomLocation(creep);
 
                     // go directly to the source node
                     // if (creep.memory.target == null || creep.memory.target == "") {

@@ -33,6 +33,7 @@ declare global {
     state: string;
     room: string;
     target: string;
+    flipflop: number;
   }
 
   // Syntax for adding properties to `global` (ex "global.log")
@@ -75,15 +76,15 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
       let roomLevel = (spawn.room.controller != null) ? spawn.room.controller.level : 1;
 
-      if (numHarvesters < 3 * roomLevel) {
+      if (numHarvesters < 4 * roomLevel) {
         if (spawn.spawnCreep([ MOVE, MOVE, MOVE, WORK, CARRY ], creepName, { memory: {role: "HARVESTER", state: "MINING", room: spawn.room.name }} as SpawnOptions) == ERR_NOT_ENOUGH_ENERGY) {
           console.log('Could not spawn harvester: not enough energy!');
         }
-      } else if (numBuilders < 1) {
+      } else if (numBuilders < 3) {
         spawn.spawnCreep([ MOVE, MOVE, MOVE, WORK, CARRY ], creepName, { memory: {role: "BUILDER", state: "MINING", room: spawn.room.name }} as SpawnOptions);
       } else if (numRepairers < 2) {
         spawn.spawnCreep([ MOVE, MOVE, MOVE, WORK, CARRY ], creepName, { memory: {role: "REPAIRER", state: "MINING", room: spawn.room.name }} as SpawnOptions);
-      } else if (numUpgraders < 1 * roomLevel) {
+      } else if (numUpgraders < 1) {
         spawn.spawnCreep([ MOVE, MOVE, WORK, CARRY ], creepName, { memory: {role: "UPGRADER", state: "MINING", room: spawn.room.name }} as SpawnOptions);
       } else if (numDefenders < 2) {
         spawn.spawnCreep([ MOVE, MOVE, TOUGH, ATTACK ], creepName, { memory: {role: "DEFENDER", room: spawn.room.name }} as SpawnOptions);

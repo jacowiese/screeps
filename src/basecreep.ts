@@ -1,3 +1,5 @@
+import { random } from "lodash";
+
 export abstract class BaseCreep {
 
     public closestConstructionSite(creep: Creep): ConstructionSite | null {
@@ -25,4 +27,9 @@ export abstract class BaseCreep {
         return Math.sqrt(sqrDist);
     }
 
+    public moveToRandomLocation(creep: Creep) {
+        if (creep.moveTo(random(10, 40, false), random(10, 40, false)) == ERR_NO_PATH) {
+            // errrr, do nothing?
+        }
+    }
 }

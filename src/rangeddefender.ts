@@ -16,7 +16,7 @@ export class RangedDefender {
         } else {
 
             // First try to move to a flag called move! because it might be important.
-            let flag = Game.flags["move"];
+            let flag = Game.flags["rally"];
             if (flag != null) {
                 creep.moveTo(flag.pos.x, flag.pos.y);
             } else {

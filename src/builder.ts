@@ -19,23 +19,30 @@ export class Builder extends BaseCreep {
                         creep.moveTo(cntnr.pos.x, cntnr.pos.y);
                     }
                 } else {
-                    // go directly to the source node
-                    if (creep.memory.target == null || creep.memory.target == "") {
-                        let sources = creep.room.find(FIND_SOURCES_ACTIVE);
-                        let source = sources[random(1, sources.length)];
-                        let sourceId : string | undefined;
-                        if (source != undefined) {
-                            sourceId = source.id;
-                        } else {
-                            sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
-                        }
-                        creep.memory.target =  sourceId;
-                    }
 
-                    let sourceNode = Game.getObjectById(creep.memory.target) as Source;
+                    // go directly to the source node
+
+                    let sourceNode = creep.pos.findClosestByPath(FIND_SOURCES) as Source;
                     if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
                         creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
                     }
+
+                    // if (creep.memory.target == null || creep.memory.target == "") {
+                    //     let sources = creep.room.find(FIND_SOURCES_ACTIVE);
+                    //     let source = sources[random(1, sources.length)];
+                    //     let sourceId : string | undefined;
+                    //     if (source != undefined) {
+                    //         sourceId = source.id;
+                    //     } else {
+                    //         sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
+                    //     }
+                    //     creep.memory.target =  sourceId;
+                    // }
+
+                    // let sourceNode = Game.getObjectById(creep.memory.target) as Source;
+                    // if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
+                    //     creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                    // }
                 }
             } else {
                 creep.memory.state = "WORKING";
@@ -68,29 +75,4 @@ export class Builder extends BaseCreep {
             }
         }
     }
-
-    // private closestConstructionSite(creep: Creep): ConstructionSite | null {
-    //     let building : ConstructionSite | null = null;
-    //     let distance : number = Number.MAX_VALUE;
-    //     let incompleteBuildings = _.filter(creep.room.find(FIND_MY_CONSTRUCTION_SITES), (s) => s.progress < s.progressTotal);
-    //     if (incompleteBuildings != null) {
-
-    //         for (let b = 0; b < incompleteBuildings.length; b++) {
-    //             let d = this.dist(creep.pos, incompleteBuildings[b].pos);
-    //             if (d < distance) {
-    //                 distance = d;
-    //                 building = incompleteBuildings[b];
-    //             }
-    //         }
-    //     }
-
-    //     // console.log("Min distance: " + distance);
-
-    //     return building;
-    // }
-
-    // private dist(a: RoomPosition, b: RoomPosition): number {
-    //     let sqrDist = Math.abs(a.x * a.x - b.x * b.x + a.y * a.y - b.y * b.y);
-    //     return Math.sqrt(sqrDist);
-    // }
 }

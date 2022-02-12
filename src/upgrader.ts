@@ -1,8 +1,10 @@
+import { BaseCreep } from "basecreep";
 import { random } from "lodash";
 
-export class Upgrader {
+export class Upgrader extends BaseCreep {
 
     public constructor() {
+        super();
     }
 
     public update(creep: Creep): void {
@@ -18,23 +20,24 @@ export class Upgrader {
                 } else {
 
                     // do nothing - only get energy from a container
+                    // this.moveToRandomLocation(creep);
 
-                    // if (creep.memory.target == null || creep.memory.target == "") {
-                    //     let sources = creep.room.find(FIND_SOURCES_ACTIVE);
-                    //     let source = sources[random(1, sources.length)];
-                    //     let sourceId : string | undefined;
-                    //     if (source != undefined) {
-                    //         sourceId = source.id;
-                    //     } else {
-                    //         sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
-                    //     }
-                    //     creep.memory.target =  sourceId;
-                    // }
+                    if (creep.memory.target == null || creep.memory.target == "") {
+                        let sources = creep.room.find(FIND_SOURCES_ACTIVE);
+                        let source = sources[random(1, sources.length)];
+                        let sourceId : string | undefined;
+                        if (source != undefined) {
+                            sourceId = source.id;
+                        } else {
+                            sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
+                        }
+                        creep.memory.target =  sourceId;
+                    }
 
-                    // let sourceNode = Game.getObjectById(creep.memory.target) as Source;
-                    // if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
-                    //     creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
-                    // }
+                    let sourceNode = Game.getObjectById(creep.memory.target) as Source;
+                    if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                    }
                 }
             } else {
                 creep.memory.state = "WORKING";
