@@ -1,11 +1,46 @@
+import { BaseCreep } from "basecreep";
 import { random } from "lodash";
 
-export class Defender {
+export class Defender extends BaseCreep {
 
     public constructor() {
+        super();
+    }
+
+    public spawnCreep(creepName: string, spawn: StructureSpawn): void {
+        super.spawnCreep(creepName, spawn);
+
+        let creepMemory: CreepMemory = {role: "DEFENDER", state: "", room: spawn.room.name };
+
+        let body: Array<BodyPartConstant> = new Array<BodyPartConstant>();
+
+        let numParts = Math.floor(spawn.room.energyAvailable / 200);
+        if (numParts == 0) {
+            return;
+        }
+
+        for (let i: number = 0; i < numParts; i++) {
+            body.push(MOVE); // 50
+            body.push(MOVE); // 50
+            body.push(TOUGH); // 10
+            body.push(TOUGH); // 10
+            body.push(ATTACK); // 80
+        }
+
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+
+        console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
+
+        switch (result) {
+            case ERR_NOT_ENOUGH_ENERGY: {
+                console.log('Could not spawn defender: not enough energy!');
+            }
+        }
     }
 
     public update(creep: Creep): void {
+
+        super.update(creep);
 
         // defend!
         let hostile = creep.room.find(FIND_HOSTILE_CREEPS)[0];

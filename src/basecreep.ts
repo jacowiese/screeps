@@ -2,6 +2,10 @@ import { random } from "lodash";
 
 export abstract class BaseCreep {
 
+    public spawnCreep(creepName: string, spawn: StructureSpawn): void {}
+
+    public update(creep: Creep): void {}
+
     public closestConstructionSite(creep: Creep): ConstructionSite | null {
         let building : ConstructionSite | null = null;
         let distance : number = Number.MAX_VALUE;
@@ -27,7 +31,7 @@ export abstract class BaseCreep {
         return Math.sqrt(sqrDist);
     }
 
-    public moveToRandomLocation(creep: Creep) {
+    public moveToRandomLocation(creep: Creep): void {
         if (creep.moveTo(random(10, 40, false), random(10, 40, false)) == ERR_NO_PATH) {
             // errrr, do nothing?
         }

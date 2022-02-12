@@ -7,6 +7,36 @@ export class WallRepairer extends BaseCreep {
         super();
     }
 
+    public spawnCreep(creepName: string, spawn: StructureSpawn): void {
+        super.spawnCreep(creepName, spawn);
+
+        let creepMemory: CreepMemory = {role: "WALLREPAIRER", state: "MINING", room: spawn.room.name };
+
+        let body: Array<BodyPartConstant> = new Array<BodyPartConstant>();
+
+        let numParts = Math.floor(spawn.room.energyAvailable / 250);
+        if (numParts == 0) {
+            return;
+        }
+
+        for (let i: number = 0; i < numParts; i++) {
+            body.push(MOVE);
+            body.push(MOVE);
+            body.push(WORK);
+            body.push(CARRY);
+        }
+
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+
+        console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
+
+        switch (result) {
+            case ERR_NOT_ENOUGH_ENERGY: {
+                console.log('Could not spawn wall-repairer: not enough energy!');
+            }
+        }
+    }
+
     public update(creep: Creep): void {
 
         if (creep.memory.state == "MINING") {

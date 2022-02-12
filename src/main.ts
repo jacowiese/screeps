@@ -32,8 +32,8 @@ declare global {
     role: string;
     state: string;
     room: string;
-    target: string;
-    flipflop: number;
+    target?: string;
+    flipflop?: number;
   }
 
   // Syntax for adding properties to `global` (ex "global.log")
@@ -66,35 +66,34 @@ export const loop = ErrorMapper.wrapLoop(() => {
   let numRangedDefenders = _.sum(Game.creeps, (c) => c.memory.role == "RANGEDDEFENDER" ? 1: 0);
   let numWallRepairers = _.sum(Game.creeps, (c) => c.memory.role == "WALLREPAIRER" ? 1: 0);
 
-  Game.map.visual.clear().text("Harvesters: " + numHarvesters, new RoomPosition(30,30, "W32S51"), { color: "#ffffff" });
-
   for (const spName in Game.spawns) {
     let spawn = Game.spawns[spName];
 
-    if (spawn.room.energyAvailable >= 300) {
       let creepName = spawn.room.name + "_" + spawn.name + "_" + Game.time;
 
       let roomLevel = (spawn.room.controller != null) ? spawn.room.controller.level : 1;
 
-      if (numHarvesters < 4 * roomLevel) {
-        if (spawn.spawnCreep([ MOVE, MOVE, MOVE, WORK, CARRY ], creepName, { memory: {role: "HARVESTER", state: "MINING", room: spawn.room.name }} as SpawnOptions) == ERR_NOT_ENOUGH_ENERGY) {
-          console.log('Could not spawn harvester: not enough energy!');
-        }
-      } else if (numBuilders < 3) {
-        spawn.spawnCreep([ MOVE, MOVE, MOVE, WORK, CARRY ], creepName, { memory: {role: "BUILDER", state: "MINING", room: spawn.room.name }} as SpawnOptions);
-      } else if (numRepairers < 2) {
-        spawn.spawnCreep([ MOVE, MOVE, MOVE, WORK, CARRY ], creepName, { memory: {role: "REPAIRER", state: "MINING", room: spawn.room.name }} as SpawnOptions);
-      } else if (numUpgraders < 1) {
-        spawn.spawnCreep([ MOVE, MOVE, WORK, CARRY ], creepName, { memory: {role: "UPGRADER", state: "MINING", room: spawn.room.name }} as SpawnOptions);
-      } else if (numDefenders < 2) {
-        spawn.spawnCreep([ MOVE, MOVE, TOUGH, ATTACK ], creepName, { memory: {role: "DEFENDER", room: spawn.room.name }} as SpawnOptions);
-      } else if (numRangedDefenders < 2) {
-        spawn.spawnCreep([ MOVE, MOVE, TOUGH, RANGED_ATTACK ], creepName, { memory: {role: "RANGEDDEFENDER", room: spawn.room.name }} as SpawnOptions);
-      }else if (numWallRepairers < 2) {
-        spawn.spawnCreep([ MOVE, MOVE, WORK, CARRY ], creepName, { memory: {role: "WALLREPAIRER", state: "MINING", room: spawn.room.name }} as SpawnOptions);
-      }
-
+    if (numHarvesters < 4 * roomLevel) {
+      let harvester: Harvester = new Harvester();
+      harvester.spawnCreep(creepName, spawn);
+    } else if (numBuilders < 3) {
+      let builder: Builder = new Builder();
+      builder.spawnCreep(creepName, spawn);
+    } else if (numRepairers < 2) {
+      let repairer: Repairer = new Repairer();
+      repairer.spawnCreep(creepName, spawn);
+    } else if (numUpgraders < 1) {
+      let upgrader: Upgrader = new Upgrader();
+      upgrader.spawnCreep(creepName, spawn);
+    } else if (numDefenders < 2) {
+      spawn.spawnCreep([ MOVE, MOVE, TOUGH, ATTACK ], creepName, { memory: {role: "DEFENDER", room: spawn.room.name }} as SpawnOptions);
+    } else if (numRangedDefenders < 2) {
+      spawn.spawnCreep([ MOVE, MOVE, TOUGH, RANGED_ATTACK ], creepName, { memory: {role: "RANGEDDEFENDER", room: spawn.room.name }} as SpawnOptions);
+    } else if (numWallRepairers < 2) {
+      let wallrepairer: WallRepairer = new WallRepairer();
+      wallrepairer.spawnCreep(creepName, spawn);
     }
+
   }
 
   for (const creepName in Game.creeps) {
