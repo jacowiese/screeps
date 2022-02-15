@@ -26,6 +26,23 @@ export abstract class BaseCreep {
         return building;
     }
 
+    public closestStructure(creep: Creep, structures: Array<Structure>): Structure | null {
+        let building : Structure | null = null;
+        let distance : number = Number.MAX_VALUE;
+        if (structures != null) {
+
+            for (let b = 0; b < structures.length; b++) {
+                let d = this.dist(creep.pos, structures[b].pos);
+                if (d < distance) {
+                    distance = d;
+                    building = structures[b];
+                }
+            }
+        }
+
+        return building;
+    }
+
     public dist(a: RoomPosition, b: RoomPosition): number {
         let sqrDist = Math.abs(a.x * a.x - b.x * b.x + a.y * a.y - b.y * b.y);
         return Math.sqrt(sqrDist);

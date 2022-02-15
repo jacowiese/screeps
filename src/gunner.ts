@@ -1,7 +1,7 @@
 import { BaseCreep } from "basecreep";
 import { random } from "lodash";
 
-export class Harvester extends BaseCreep {
+export class Gunner extends BaseCreep {
 
     public constructor() {
         super();
@@ -10,7 +10,7 @@ export class Harvester extends BaseCreep {
     public spawnCreep(creepName: string, spawn: StructureSpawn): void {
         super.spawnCreep(creepName, spawn);
 
-        let creepMemory: CreepMemory = {role: "HARVESTER", state: "MINING", room: spawn.room.name };
+        let creepMemory: CreepMemory = {role: "GUNNER", state: "MINING", room: spawn.room.name };
 
         let body: Array<BodyPartConstant> = new Array<BodyPartConstant>();
 
@@ -31,7 +31,7 @@ export class Harvester extends BaseCreep {
 
         switch (result) {
             case ERR_NOT_ENOUGH_ENERGY: {
-                console.log('Could not spawn harvester: not enough energy!');
+                console.log('Could not spawn gunner: not enough energy!');
             }
         }
     }
@@ -69,12 +69,6 @@ export class Harvester extends BaseCreep {
                                 sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
                             }
                             creep.memory.target =  sourceId;
-                            // creep.memory.flipflop = random(0, 1, false);
-
-                            if (creep.memory.flipflop == undefined || creep.memory.flipflop == 0)
-                                creep.memory.flipflop = 1;
-                            else
-                                creep.memory.flipflop = 0;
                         }
 
                         let sourceNode = Game.getObjectById(creep.memory.target) as Source;
@@ -90,44 +84,22 @@ export class Harvester extends BaseCreep {
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 
-                // put the energy in an extension
-                    let exts = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_EXTENSION && m.store.energy < 50) as Array<StructureExtension>;
-                    let ext: StructureExtension = this.closestStructure(creep, exts) as StructureExtension;
-                    if (ext != null) {
-                        // If there is room in an extension, fill it first!
-                        if (creep.transfer(ext, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(ext.pos.x, ext.pos.y);
-                        }
-                    } else {
+                let turrets: Array<StructureTower> = creep.room.find(FIND_MY_STRUCTURES) as Array<StructureTower>;
+                turrets.forEach((turret) => {
 
-                            // if all places are full, put the energy in the spawn
-                        let spawn = creep.room.find(FIND_MY_SPAWNS)[0];
-                        if (spawn == null) {
-                            console.log("Harvester cannot find room spawn!");
-                            return;
-                        }
+                    if (turret.structureType === STRUCTURE_TOWER) {
+                        if (turret.store.energy < 2000) {
 
-                        if (spawn.energy < spawn.energyCapacity) {
-                            // Put energy into spawn for new creeps!
+                            console.log("Hello " + turret.store.energy);
 
-                            if (creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(spawn.pos.x, spawn.pos.y);
-                            }
-
-                        }  else {
-
-                            // upgrade controller
-                            let controller = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_CONTROLLER)[0] as StructureController;
-                            if (controller == null) {
-                                console.log("Harvester cannot find room controller!");
-                                return;
-                            }
-
-                            if (creep.upgradeController(controller) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(controller.pos.x, controller.pos.y);
+                            if (creep.transfer(turret, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(turret.pos.x, turret.pos.y);
                             }
                         }
                     }
+
+                });
+
             } else {
                 creep.memory.state = "MINING";
                 creep.memory.target = "";

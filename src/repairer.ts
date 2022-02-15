@@ -41,7 +41,10 @@ export class Repairer extends BaseCreep {
 
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
-                let cntnr = _.filter(creep.room.find(FIND_STRUCTURES), (k) => k.structureType == STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 0)[0];
+
+                let structures = _.filter(creep.room.find(FIND_STRUCTURES), (k) => k.structureType == STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
+                let cntnr = this.closestStructure(creep, structures) as StructureContainer;
+
                 // if there are containers with energy, go get it from them!
                 if (cntnr != null) {
                     if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {

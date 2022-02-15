@@ -12,6 +12,8 @@ import { ErrorMapper } from "utils/ErrorMapper";
 import { SerializeUtil } from "utils/SerializeUtil";
 import "role";
 import { TowerManager } from "tower";
+import { Miner } from "miner";
+import { Gunner } from "gunner";
 
 declare global {
   /*
@@ -58,9 +60,11 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
   }
 
+  let numMiners = _.sum(Game.creeps, (c) => c.memory.role == "MINER" ? 1 : 0);
   let numHarvesters = _.sum(Game.creeps, (c) => c.memory.role == "HARVESTER" ? 1 : 0);
   let numBuilders = _.sum(Game.creeps, (c) => c.memory.role == "BUILDER" ? 1 : 0);
-  let numRepairers = _.sum(Game.creeps, (c) => c.memory.role == "REPAIRER" ? 1: 0);
+  let numRepairers = _.sum(Game.creeps, (c) => c.memory.role == "REPAIRER" ? 1 : 0);
+  let numGunners = _.sum(Game.creeps, (c) => c.memory.role == "GUNNER" ? 1 : 0);
   let numUpgraders = _.sum(Game.creeps, (c) => c.memory.role == "UPGRADER" ? 1: 0);
   let numDefenders = _.sum(Game.creeps, (c) => c.memory.role == "DEFENDER" ? 1: 0);
   let numRangedDefenders = _.sum(Game.creeps, (c) => c.memory.role == "RANGEDDEFENDER" ? 1: 0);
@@ -73,12 +77,18 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
       let roomLevel = (spawn.room.controller != null) ? spawn.room.controller.level : 1;
 
-    if (numHarvesters < 4 * roomLevel) {
+    if (numMiners < 5) {
+      let miner: Miner = new Miner();
+      miner.spawnCreep(creepName, spawn);
+    } else if (numHarvesters < 4) {
       let harvester: Harvester = new Harvester();
       harvester.spawnCreep(creepName, spawn);
-    } else if (numBuilders < 3) {
+    } else if (numBuilders < 4) {
       let builder: Builder = new Builder();
       builder.spawnCreep(creepName, spawn);
+    } else if (numGunners < 1) {
+      let gunner: Gunner = new Gunner();
+      gunner.spawnCreep(creepName, spawn);
     } else if (numRepairers < 2) {
       let repairer: Repairer = new Repairer();
       repairer.spawnCreep(creepName, spawn);
@@ -99,6 +109,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
   for (const creepName in Game.creeps) {
     let creep = Game.creeps[creepName];
 
+    if (creep.memory.role === "MINER") {
+      let miner = new Miner();
+      miner.update(creep);
+    }
     if (creep.memory.role === "HARVESTER") {
       let harvester = new Harvester();
       harvester.update(creep);
@@ -110,6 +124,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
     if (creep.memory.role === "REPAIRER") {
       let repairer = new Repairer();
       repairer.update(creep);
+    }
+    if (creep.memory.role === "GUNNER") {
+      let gunner = new Gunner();
+      gunner.update(creep);
     }
     if (creep.memory.role === "UPGRADER") {
       let upgrader = new Upgrader();
