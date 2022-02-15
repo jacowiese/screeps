@@ -1,7 +1,7 @@
 import { BaseCreep } from "basecreep";
 import { random } from "lodash";
 
-export class Gunner extends BaseCreep {
+export class QuarterMaster extends BaseCreep {
 
     public constructor() {
         super();
@@ -10,7 +10,7 @@ export class Gunner extends BaseCreep {
     public spawnCreep(creepName: string, spawn: StructureSpawn): void {
         super.spawnCreep(creepName, spawn);
 
-        let creepMemory: CreepMemory = {role: "GUNNER", state: "MINING", room: spawn.room.name };
+        let creepMemory: CreepMemory = {role: "QUARTERMASTER", state: "MINING", room: spawn.room.name };
 
         let body: Array<BodyPartConstant> = new Array<BodyPartConstant>();
 
@@ -31,7 +31,7 @@ export class Gunner extends BaseCreep {
 
         switch (result) {
             case ERR_NOT_ENOUGH_ENERGY: {
-                console.log('Could not spawn gunner: not enough energy!');
+                console.log('Could not spawn quartermaster: not enough energy!');
             }
         }
     }
@@ -69,6 +69,12 @@ export class Gunner extends BaseCreep {
                                 sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
                             }
                             creep.memory.target =  sourceId;
+                            // creep.memory.flipflop = random(0, 1, false);
+
+                            if (creep.memory.flipflop == undefined || creep.memory.flipflop == 0)
+                                creep.memory.flipflop = 1;
+                            else
+                                creep.memory.flipflop = 0;
                         }
 
                         let sourceNode = Game.getObjectById(creep.memory.target) as Source;
@@ -84,18 +90,16 @@ export class Gunner extends BaseCreep {
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 
-                let turrets: Array<StructureTower> = creep.room.find(FIND_MY_STRUCTURES) as Array<StructureTower>;
-                turrets.forEach((turret) => {
-
-                    if (turret.structureType === STRUCTURE_TOWER) {
-                        if (turret.store.energy < 2000) {
-
-                            if (creep.transfer(turret, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(turret.pos.x, turret.pos.y);
-                            }
-                        }
+                let storages = creep.room.find(FIND_MY_STRUCTURES, {filter: (structure) => {
+                    return (structure.structureType === STRUCTURE_STORAGE && structure.store.getFreeCapacity() != 0);
                     }
+                }) as Array<StructureStorage>;
 
+                storages.forEach((storage) => {
+
+                    if (creep.transfer(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(storage.pos.x, storage.pos.y);
+                    }
                 });
 
             } else {

@@ -14,6 +14,7 @@ import "role";
 import { TowerManager } from "tower";
 import { Miner } from "miner";
 import { Gunner } from "gunner";
+import { QuarterMaster } from "quartermaster";
 
 declare global {
   /*
@@ -69,6 +70,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
   let numDefenders = _.sum(Game.creeps, (c) => c.memory.role == "DEFENDER" ? 1: 0);
   let numRangedDefenders = _.sum(Game.creeps, (c) => c.memory.role == "RANGEDDEFENDER" ? 1: 0);
   let numWallRepairers = _.sum(Game.creeps, (c) => c.memory.role == "WALLREPAIRER" ? 1: 0);
+  let numQuatermasters = _.sum(Game.creeps, (c) => c.memory.role == "QUARTERMASTER" ? 1: 0);
 
   for (const spName in Game.spawns) {
     let spawn = Game.spawns[spName];
@@ -80,16 +82,16 @@ export const loop = ErrorMapper.wrapLoop(() => {
     if (numMiners < 5) {
       let miner: Miner = new Miner();
       miner.spawnCreep(creepName, spawn);
-    } else if (numHarvesters < 4) {
+    } else if (numHarvesters < 2) {
       let harvester: Harvester = new Harvester();
       harvester.spawnCreep(creepName, spawn);
-    } else if (numBuilders < 4) {
+    } else if (numBuilders < 2) {
       let builder: Builder = new Builder();
       builder.spawnCreep(creepName, spawn);
-    } else if (numGunners < 1) {
+    } else if (numGunners < 2) {
       let gunner: Gunner = new Gunner();
       gunner.spawnCreep(creepName, spawn);
-    } else if (numRepairers < 2) {
+    } else if (numRepairers < 1) {
       let repairer: Repairer = new Repairer();
       repairer.spawnCreep(creepName, spawn);
     } else if (numUpgraders < 1) {
@@ -102,6 +104,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
     } else if (numWallRepairers < 2) {
       let wallrepairer: WallRepairer = new WallRepairer();
       wallrepairer.spawnCreep(creepName, spawn);
+    } else if (numQuatermasters < 1) {
+      let quartermaster: QuarterMaster = new QuarterMaster();
+      quartermaster.spawnCreep(creepName, spawn);
     }
 
   }
@@ -144,6 +149,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
     if (creep.memory.role === "WALLREPAIRER") {
       let wallrepairer = new WallRepairer();
       wallrepairer.update(creep);
+    }
+    if (creep.memory.role === "QUARTERMASTER") {
+      let quartermaster: QuarterMaster = new QuarterMaster();
+      quartermaster.update(creep);
     }
   }
 
