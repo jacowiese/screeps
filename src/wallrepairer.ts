@@ -42,7 +42,10 @@ export class WallRepairer extends BaseCreep {
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
-                let structures = _.filter(creep.room.find(FIND_STRUCTURES), (k) => k.structureType == STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
+                let structures = creep.room.find(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
+                    return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
+                }});
+
                 let cntnr = this.closestStructure(creep, structures) as StructureContainer;
 
                 // if there are containers with energy, go get it from them!
@@ -79,12 +82,15 @@ export class WallRepairer extends BaseCreep {
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 
-                // if there are no buildings to build, then go fix something!
-                // let brokenbuilding = _.filter(creep.room.find(FIND_STRUCTURES), (s) => s.hits < s.hitsMax)[0];
-                let brokenbuilding = this.structureWithLeastHitPoints(creep);
-                if (brokenbuilding != null) {
-                    if (creep.repair(brokenbuilding) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(brokenbuilding.pos.x, brokenbuilding.pos.y);
+                let structures: Array<Structure> = creep.room.find(FIND_STRUCTURES, { filter: (k) => {
+                    return (k.hits < k.hitsMax);
+                }}) as Array<Structure>;
+
+                structures.sort((a: Structure, b: Structure) => a.hits - b.hits);
+
+                if (structures.length > 0) {
+                    if (creep.repair(structures[0]) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(structures[0].pos.x, structures[0].pos.y);
                     }
                 }
             } else {

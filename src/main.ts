@@ -5,12 +5,7 @@ import { Upgrader } from "upgrader";
 import { Defender } from "defender";
 import { RangedDefender } from "rangeddefender";
 import { WallRepairer } from "wallrepairer";
-import { Explorer } from "explorer";
-import { random } from "lodash";
-import { SourceNode } from "source-map";
 import { ErrorMapper } from "utils/ErrorMapper";
-import { SerializeUtil } from "utils/SerializeUtil";
-import "role";
 import { TowerManager } from "tower";
 import { Miner } from "miner";
 import { Gunner } from "gunner";
@@ -104,7 +99,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     } else if (numWallRepairers < 2) {
       let wallrepairer: WallRepairer = new WallRepairer();
       wallrepairer.spawnCreep(creepName, spawn);
-    } else if (numQuatermasters < 1) {
+    } else if (numQuatermasters < 2) {
       let quartermaster: QuarterMaster = new QuarterMaster();
       quartermaster.spawnCreep(creepName, spawn);
     }

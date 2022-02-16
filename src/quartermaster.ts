@@ -50,7 +50,10 @@ export class QuarterMaster extends BaseCreep {
                     }
 
                 } else {
-                    let structures = _.filter(creep.room.find(FIND_STRUCTURES), (k) => k.structureType == STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
+                    let structures = creep.room.find(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
+                        return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
+                    }});
+
                     let cntnr = this.closestStructure(creep, structures) as StructureContainer;
 
                     // if there are containers with energy, go get it from them!

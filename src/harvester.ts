@@ -116,16 +116,17 @@ export class Harvester extends BaseCreep {
 
                         }  else {
 
-                            // upgrade controller
-                            let controller = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_CONTROLLER)[0] as StructureController;
-                            if (controller == null) {
-                                console.log("Harvester cannot find room controller!");
-                                return;
+                            // if spawn is full, move to a random extension, in case it empties, but also make sure creep is full!
+                            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                                creep.memory.state = "MINING";
+                                creep.memory.target = "";
+                            }
+                            let exts = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_EXTENSION) as Array<StructureExtension>;
+                            let ext: StructureExtension = this.closestStructure(creep, exts) as StructureExtension;
+                            if (ext != null) {
+                                creep.moveTo(ext.pos.x, ext.pos.y);
                             }
 
-                            if (creep.upgradeController(controller) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(controller.pos.x, controller.pos.y);
-                            }
                         }
                     }
             } else {

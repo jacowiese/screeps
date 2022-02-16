@@ -42,34 +42,48 @@ export class Upgrader extends BaseCreep {
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
-                let structures = _.filter(creep.room.find(FIND_STRUCTURES), (k) => k.structureType == STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
-                let cntnr = this.closestStructure(creep, structures) as StructureContainer;
+                let storage:Array<StructureStorage> = creep.room.find(FIND_MY_STRUCTURES, { filter: (k: StructureStorage) => {
+                    return (k.structureType === STRUCTURE_STORAGE && k.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
+                }}) as Array<StructureStorage>;
+                if (storage.length > 0) {
 
-                // if there are containers with energy, go get it from them!
-                if (cntnr != null) {
-                    if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(cntnr.pos.x, cntnr.pos.y);
+                    if (creep.withdraw(storage[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(storage[0].pos.x, storage[0].pos.y);
                     }
+
                 } else {
+                    let structures = creep.room.find(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
+                        return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
+                    }});
 
-                    // do nothing - only get energy from a container
-                    // this.moveToRandomLocation(creep);
+                    let cntnr = this.closestStructure(creep, structures) as StructureContainer;
 
-                    if (creep.memory.target == null || creep.memory.target == "") {
-                        let sources = creep.room.find(FIND_SOURCES_ACTIVE);
-                        let source = sources[random(1, sources.length)];
-                        let sourceId : string | undefined;
-                        if (source != undefined) {
-                            sourceId = source.id;
-                        } else {
-                            sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
+                    // if there are containers with energy, go get it from them!
+                    if (cntnr != null) {
+                        if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(cntnr.pos.x, cntnr.pos.y);
                         }
-                        creep.memory.target =  sourceId;
-                    }
+                    } else {
 
-                    let sourceNode = Game.getObjectById(creep.memory.target) as Source;
-                    if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                        // do nothing - only get energy from a container
+                        // this.moveToRandomLocation(creep);
+
+                        if (creep.memory.target == null || creep.memory.target == "") {
+                            let sources = creep.room.find(FIND_SOURCES_ACTIVE);
+                            let source = sources[random(1, sources.length)];
+                            let sourceId : string | undefined;
+                            if (source != undefined) {
+                                sourceId = source.id;
+                            } else {
+                                sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
+                            }
+                            creep.memory.target =  sourceId;
+                        }
+
+                        let sourceNode = Game.getObjectById(creep.memory.target) as Source;
+                        if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                        }
                     }
                 }
             } else {

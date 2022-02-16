@@ -13,8 +13,8 @@ export class TowerManager {
             return;
         }
 
-        let towers = room.find(FIND_MY_STRUCTURES, { filter: (structure) => {
-            return (structure.structureType === STRUCTURE_TOWER);
+        let towers = room.find(FIND_MY_STRUCTURES, { filter: (structure: StructureTower) => {
+            return (structure.structureType === STRUCTURE_TOWER && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
         }}) as Array<StructureTower>;
 
         if (towers === undefined || towers === null) {
@@ -24,6 +24,7 @@ export class TowerManager {
 
         // defend!
         let hostiles = room.find(FIND_HOSTILE_CREEPS) as Array<Creep>;
+        hostiles.sort((a: Creep, b: Creep) => a.hits - b.hits);
         if (hostiles.length > 0) {
 
             console.log("Tower attacking a creep!");
@@ -31,55 +32,38 @@ export class TowerManager {
 
         } else {
 
-            let whatToRepair: number = 0;
-
             // repair
-            let structures = room.find(FIND_STRUCTURES, { filter: (structure) => {
+            let structures: Array<Structure> = room.find(FIND_STRUCTURES, { filter: (structure: Structure) => {
                 return (structure.hits < structure.hitsMax);
             }}) as Array<Structure>;
 
-            structures.sort((s1: Structure, s2: Structure) => {
-                if (s1.hits < s2.hits)
-                    return -1;
+            structures.sort((s1: Structure, s2: Structure) => s1.hits - s2.hits);
 
-                if (s2.hits > s2.hits)
-                    return 1;
+            // // Only structures
+            // structures.forEach((t) => {
+            //     if (t.structureType !== STRUCTURE_WALL && t.structureType !== STRUCTURE_RAMPART && t.structureType !== STRUCTURE_ROAD) {
+            //         towers.forEach((tower) => tower.repair(t));
+            //     }
+            // });
 
-                return 0;
-            });
-
-            // Only structures
-            structures.forEach((t) => {
-                if (t.structureType !== STRUCTURE_WALL && t.structureType !== STRUCTURE_RAMPART && t.structureType !== STRUCTURE_ROAD) {
-                    towers.forEach((tower) => tower.repair(t));
-                    whatToRepair = 1;
-                }
-            });
-
-            // Roads
-            if (whatToRepair == 0) {
-                structures.forEach((t) => {
-                    if (t.structureType !== STRUCTURE_WALL && t.structureType !== STRUCTURE_RAMPART) {
-                        towers.forEach((tower) => {
-                            if (tower.store.energy > tower.store.getCapacity(RESOURCE_ENERGY) / 2) {
-                                tower.repair(t)
-                                whatToRepair = 1;
-                            }
-                        });
-                    }
-                });
-            }
+            // // Roads
+            // structures.forEach((t) => {
+            //     if (t.structureType !== STRUCTURE_WALL && t.structureType !== STRUCTURE_RAMPART) {
+            //         towers.forEach((tower) => {
+            //             if (tower.store.energy > tower.store.getCapacity(RESOURCE_ENERGY) / 2) {
+            //                 tower.repair(t)
+            //             }
+            //         });
+            //     }
+            // });
 
             // Ramparts and Walls &&&&&& anything else!
-            if (whatToRepair == 0) {
-                structures.forEach((t) => {
-                    towers.forEach((tower) => {
-                        if (tower.store.energy > tower.store.getCapacity(RESOURCE_ENERGY) / 2) {
-                            tower.repair(t)
-                            whatToRepair = 1;
-                        }
-                    });
-                });
+            if (structures.length > 0) {
+                towers.forEach((tower) => {
+                    if (tower.repair(structures[0]) == OK) {
+                        console.log("Tower repairing structure with " + structures[0].hits + " hits.");
+                    }
+                })
             }
         }
     }
