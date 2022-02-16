@@ -39,29 +39,27 @@ export class TowerManager {
 
             structures.sort((s1: Structure, s2: Structure) => s1.hits - s2.hits);
 
-            // // Only structures
-            // structures.forEach((t) => {
-            //     if (t.structureType !== STRUCTURE_WALL && t.structureType !== STRUCTURE_RAMPART && t.structureType !== STRUCTURE_ROAD) {
-            //         towers.forEach((tower) => tower.repair(t));
-            //     }
-            // });
+            let repaired: boolean = false;
 
-            // // Roads
-            // structures.forEach((t) => {
-            //     if (t.structureType !== STRUCTURE_WALL && t.structureType !== STRUCTURE_RAMPART) {
-            //         towers.forEach((tower) => {
-            //             if (tower.store.energy > tower.store.getCapacity(RESOURCE_ENERGY) / 2) {
-            //                 tower.repair(t)
-            //             }
-            //         });
-            //     }
-            // });
+            if (structures.length > 0 && repaired == false) {
+                structures.forEach((s) => {
+                    if (s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART && s.structureType !== STRUCTURE_ROAD) {
+                        towers.forEach((tower) => {
+                            if (tower.repair(s) == OK) {
+                                console.log("Tower repairing structure with " + s.hits + " hits.");
+                                repaired = true;
+                            }
+                        })
+                    }
+                })
+            }
 
             // Ramparts and Walls &&&&&& anything else!
-            if (structures.length > 0) {
+            if (structures.length > 0 && repaired == false) {
                 towers.forEach((tower) => {
                     if (tower.repair(structures[0]) == OK) {
                         console.log("Tower repairing structure with " + structures[0].hits + " hits.");
+                        repaired = true;
                     }
                 })
             }
