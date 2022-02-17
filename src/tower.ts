@@ -46,7 +46,7 @@ export class TowerManager {
                     if (s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART && s.structureType !== STRUCTURE_ROAD) {
                         towers.forEach((tower) => {
                             if (tower.repair(s) == OK) {
-                                console.log("Tower repairing structure with " + s.hits + " hits.");
+                                // console.log("Tower repairing structure with " + s.hits + " hits.");
                                 repaired = true;
                             }
                         })
@@ -57,9 +57,30 @@ export class TowerManager {
             // Ramparts and Walls &&&&&& anything else!
             if (structures.length > 0 && repaired == false) {
                 towers.forEach((tower) => {
-                    if (tower.repair(structures[0]) == OK) {
-                        console.log("Tower repairing structure with " + structures[0].hits + " hits.");
-                        repaired = true;
+
+                    let storage: StructureStorage = tower.room.find(FIND_MY_STRUCTURES, { filter: (k) => {
+                        return (k.structureType === STRUCTURE_STORAGE);
+                    }})[0] as StructureStorage;
+
+                    if (storage != undefined || storage != null) {
+                        // Only fix other stuff if storage capacity is > 50k
+                        if (storage.store.getUsedCapacity(RESOURCE_ENERGY) > 50000) {
+                            if (tower.store.getUsedCapacity(RESOURCE_ENERGY) > tower.store.getCapacity(RESOURCE_ENERGY) / 2) {
+                                if (tower.repair(structures[0]) == OK) {
+                                    // console.log("Tower repairing structure with " + structures[0].hits + " hits.");
+                                    repaired = true;
+                                }
+                            }
+                        }
+                    } else {
+
+                        // If storage doesn't exist... then just use the tower
+                        if (tower.store.getUsedCapacity(RESOURCE_ENERGY) > tower.store.getCapacity(RESOURCE_ENERGY) / 2) {
+                            if (tower.repair(structures[0]) == OK) {
+                                // console.log("Tower repairing structure with " + structures[0].hits + " hits.");
+                                repaired = true;
+                            }
+                        }
                     }
                 })
             }
