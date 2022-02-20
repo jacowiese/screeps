@@ -33,7 +33,7 @@ export abstract class BaseCreep {
 
             for (let b = 0; b < structures.length; b++) {
                 let d = this.dist(creep.pos, structures[b].pos);
-                if (d < distance) {
+                if (d <= distance) {
                     distance = d;
                     building = structures[b];
                 }
@@ -52,5 +52,9 @@ export abstract class BaseCreep {
         if (creep.moveTo(random(10, 40, false), random(10, 40, false)) == ERR_NO_PATH) {
             // errrr, do nothing?
         }
+    }
+
+    public countRoles(role: string): number {
+        return _.sum(Game.creeps, (c) => c.memory.role == role ? 1 : 0);
     }
 }

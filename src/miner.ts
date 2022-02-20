@@ -39,50 +39,42 @@ export class Miner extends BaseCreep {
     public update(creep: Creep): void {
         super.update(creep);
 
-        if (creep.memory.state == "MINING") {
-            if (creep.store.getFreeCapacity() != 0) {
+        if (creep.memory.target == null || creep.memory.target == "") {
+            this.selectSource(creep);
+        }
 
-                if (creep.memory.target == null || creep.memory.target == "") {
-                    let sources: Array<Source> = creep.room.find(FIND_SOURCES_ACTIVE) as Array<Source>;
-
-                    let sourceId: string | undefined = "";
-                    let targetCount = 100;
-                    sources.forEach((tempSrc) => {
-
-                        let result = this.targetCount(tempSrc.id);
-                        if (result < targetCount) {
-                            targetCount = result;
-                            sourceId = tempSrc.id;
-                        }
-                    });
-
-                    creep.memory.target = sourceId;
-                }
-
-                let sourceNode = Game.getObjectById(creep.memory.target) as Source;
-                if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
-                }
-            } else {
-                creep.memory.state = "WORKING";
-            }
-        } else if (creep.memory.state == "WORKING") {
-            if (creep.store.getUsedCapacity() > 0) {
-
-
-                // put energy into container if there are any
-                let cntnr = _.filter(creep.room.find(FIND_STRUCTURES), (k) => k.structureType == STRUCTURE_CONTAINER && k.store.getFreeCapacity(RESOURCE_ENERGY) > 0)[0];
-                if (cntnr != null) {
-                    if (creep.transfer(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(cntnr.pos.x, cntnr.pos.y);
+        if (creep.memory.target != undefined || creep.memory.target != "") {
+            let sourceNode = Game.getObjectById(creep.memory.target as string) as Source;
+            if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                console.log(creep.name + " - " + creep.memory.flipflop);
+                if (creep.memory.flipflop != undefined) {
+                    creep.memory.flipflop = creep.memory.flipflop + 1;
+                    // 5 retries, and then it tries another source
+                    if (creep.memory.flipflop > 5 && this.countRoles("MINER") > 1) {
+                        this.selectSource(creep);
                     }
                 }
-
-            } else {
-                creep.memory.state = "MINING";
-                creep.memory.target = "";
             }
         }
+    }
+
+    private selectSource(creep: Creep): void {
+            let sources: Array<Source> = creep.room.find(FIND_SOURCES_ACTIVE) as Array<Source>;
+
+            let sourceId: string | undefined = "";
+            let targetCount = 100;
+            sources.forEach((tempSrc) => {
+
+                let result = this.targetCount(tempSrc.id);
+                if (result < targetCount) {
+                    targetCount = result;
+                    sourceId = tempSrc.id;
+                }
+            });
+
+            creep.memory.target = sourceId;
+            creep.memory.flipflop = 0;
     }
 
     public targetCount(sourceId: string): number {

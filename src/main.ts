@@ -70,40 +70,68 @@ export const loop = ErrorMapper.wrapLoop(() => {
   for (const spName in Game.spawns) {
     let spawn = Game.spawns[spName];
 
+      let storageStructures = spawn.room.find(FIND_STRUCTURES, { filter: (k: StructureStorage) => {
+        return (k.structureType === STRUCTURE_STORAGE);
+      }});
+
+      let turretStructures: Array<StructureTower> = spawn.room.find(FIND_MY_STRUCTURES, { filter: (k: StructureTower) => {
+        return (k.structureType === STRUCTURE_TOWER);
+      }}) as Array<StructureTower>;
+
       let creepName = spawn.room.name + "_" + spawn.name + "_" + Game.time;
 
       let roomLevel = (spawn.room.controller != null) ? spawn.room.controller.level : 1;
 
-    if (numMiners < 5) {
-      let miner: Miner = new Miner();
-      miner.spawnCreep(creepName, spawn);
-    } else if (numHarvesters < 2) {
-      let harvester: Harvester = new Harvester();
-      harvester.spawnCreep(creepName, spawn);
-    } else if (numBuilders < 2) {
-      let builder: Builder = new Builder();
-      builder.spawnCreep(creepName, spawn);
-    } else if (numGunners < 2) {
-      let gunner: Gunner = new Gunner();
-      gunner.spawnCreep(creepName, spawn);
-    } else if (numRepairers < 1) {
-      let repairer: Repairer = new Repairer();
-      repairer.spawnCreep(creepName, spawn);
-    } else if (numUpgraders < 1) {
-      let upgrader: Upgrader = new Upgrader();
-      upgrader.spawnCreep(creepName, spawn);
-    } else if (numDefenders < 2) {
-      spawn.spawnCreep([ MOVE, MOVE, TOUGH, ATTACK ], creepName, { memory: {role: "DEFENDER", room: spawn.room.name }} as SpawnOptions);
-    } else if (numRangedDefenders < 2) {
-      spawn.spawnCreep([ MOVE, MOVE, TOUGH, RANGED_ATTACK ], creepName, { memory: {role: "RANGEDDEFENDER", room: spawn.room.name }} as SpawnOptions);
-    } else if (numWallRepairers < 2) {
-      let wallrepairer: WallRepairer = new WallRepairer();
-      wallrepairer.spawnCreep(creepName, spawn);
-    } else if (numQuatermasters < 2) {
-      let quartermaster: QuarterMaster = new QuarterMaster();
-      quartermaster.spawnCreep(creepName, spawn);
+      console.log("Energy available: " + spawn.room.energyAvailable + " / Energy capacity: " + spawn.room.energyCapacityAvailable);
+      if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable && numMiners >= 1 && numHarvesters >= 1) {
+
+        if (numMiners < 3) {
+          let miner: Miner = new Miner();
+          miner.spawnCreep(creepName, spawn);
+        } else if (numHarvesters < 3) {
+          let harvester: Harvester = new Harvester();
+          harvester.spawnCreep(creepName, spawn);
+        } else if (numBuilders < 2) {
+          let builder: Builder = new Builder();
+          builder.spawnCreep(creepName, spawn);
+        } else if (numGunners < 1 && turretStructures.length > 0) {
+          let gunner: Gunner = new Gunner();
+          gunner.spawnCreep(creepName, spawn);
+        } else if (numRepairers < 1) {
+          let repairer: Repairer = new Repairer();
+          repairer.spawnCreep(creepName, spawn);
+        } else if (numUpgraders < 2) {
+          let upgrader: Upgrader = new Upgrader();
+          upgrader.spawnCreep(creepName, spawn);
+        } else if (numDefenders < 2) {
+          spawn.spawnCreep([ MOVE, MOVE, TOUGH, ATTACK ], creepName, { memory: {role: "DEFENDER", room: spawn.room.name }} as SpawnOptions);
+        } else if (numRangedDefenders < 2) {
+          spawn.spawnCreep([ MOVE, MOVE, TOUGH, RANGED_ATTACK ], creepName, { memory: {role: "RANGEDDEFENDER", room: spawn.room.name }} as SpawnOptions);
+        } else if (numWallRepairers < 2) {
+          let wallrepairer: WallRepairer = new WallRepairer();
+          wallrepairer.spawnCreep(creepName, spawn);
+        } else if (numQuatermasters < 5 && storageStructures.length > 0) {
+          let quartermaster: QuarterMaster = new QuarterMaster();
+          quartermaster.spawnCreep(creepName, spawn);
+        }
+    } else {
+
+      // We cannot work without miners!
+      if (numMiners < 1) {
+        let miner: Miner = new Miner();
+        miner.spawnCreep(creepName, spawn);
+      }
+
+      // Or harvesters!
+      if (numHarvesters < 1) {
+        let harvester: Harvester = new Harvester();
+        harvester.spawnCreep(creepName, spawn);
+      }
     }
 
+    // Utilise tower manager
+    let towerManager = new TowerManager();
+    towerManager.update(spawn.room.name);
   }
 
   for (const creepName in Game.creeps) {
@@ -153,10 +181,5 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
   // Code to run for each room
 
-
-
-  // Utilise tower manager
-  let towerManager = new TowerManager();
-  towerManager.update("W32S51");
 
 });

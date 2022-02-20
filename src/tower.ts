@@ -64,7 +64,7 @@ export class TowerManager {
 
                     if (storage != undefined || storage != null) {
                         // Only fix other stuff if storage capacity is > 50k
-                        if (storage.store.getUsedCapacity(RESOURCE_ENERGY) > 50000) {
+                        if (storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
                             if (tower.store.getUsedCapacity(RESOURCE_ENERGY) > tower.store.getCapacity(RESOURCE_ENERGY) / 2) {
                                 if (tower.repair(structures[0]) == OK) {
                                     // console.log("Tower repairing structure with " + structures[0].hits + " hits.");

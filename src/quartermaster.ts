@@ -42,51 +42,61 @@ export class QuarterMaster extends BaseCreep {
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
-                let resourcePos = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-                if (resourcePos != null &&  resourcePos.amount > 100) {
+                let link = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k) => {
+                    return (k.structureType === STRUCTURE_LINK && k.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
+                }});
+                if (link != undefined || link != null) {
 
-                    if (creep.pickup(resourcePos) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(resourcePos.pos.x, resourcePos.pos.y);
+                    if (creep.withdraw(link, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(link.pos.x, link.pos.y);
                     }
 
                 } else {
-                    let structures = creep.room.find(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
-                        return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
-                    }});
+                    let resourcePos = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
+                    if (resourcePos != null &&  resourcePos.amount > 100) {
 
-                    let cntnr = this.closestStructure(creep, structures) as StructureContainer;
-
-                    // if there are containers with energy, go get it from them!
-                    if (cntnr != null) {
-                        if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(cntnr.pos.x, cntnr.pos.y);
+                        if (creep.pickup(resourcePos) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(resourcePos.pos.x, resourcePos.pos.y);
                         }
+
                     } else {
-                        if (creep.memory.target == null || creep.memory.target == "") {
-                            let sources = creep.room.find(FIND_SOURCES_ACTIVE);
-                            let source = sources[random(1, sources.length)];
-                            let sourceId : string | undefined;
-                            if (source != undefined) {
-                                sourceId = source.id;
-                            } else {
-                                sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
+                        let structures = creep.room.find(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
+                            return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
+                        }});
+
+                        let cntnr = this.closestStructure(creep, structures) as StructureContainer;
+
+                        // if there are containers with energy, go get it from them!
+                        if (cntnr != null) {
+                            if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(cntnr.pos.x, cntnr.pos.y);
                             }
-                            creep.memory.target =  sourceId;
-                            // creep.memory.flipflop = random(0, 1, false);
+                        } else {
+                            if (creep.memory.target == null || creep.memory.target == "") {
+                                let sources = creep.room.find(FIND_SOURCES_ACTIVE);
+                                let source = sources[random(1, sources.length)];
+                                let sourceId : string | undefined;
+                                if (source != undefined) {
+                                    sourceId = source.id;
+                                } else {
+                                    sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
+                                }
+                                creep.memory.target =  sourceId;
+                                // creep.memory.flipflop = random(0, 1, false);
 
-                            if (creep.memory.flipflop == undefined || creep.memory.flipflop == 0)
-                                creep.memory.flipflop = 1;
-                            else
-                                creep.memory.flipflop = 0;
-                        }
+                                if (creep.memory.flipflop == undefined || creep.memory.flipflop == 0)
+                                    creep.memory.flipflop = 1;
+                                else
+                                    creep.memory.flipflop = 0;
+                            }
 
-                        let sourceNode = Game.getObjectById(creep.memory.target) as Source;
-                        if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                            let sourceNode = Game.getObjectById(creep.memory.target) as Source;
+                            if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                            }
                         }
                     }
                 }
-
             } else {
                 creep.memory.state = "WORKING";
             }

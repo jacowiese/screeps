@@ -64,25 +64,34 @@ export class Upgrader extends BaseCreep {
                             creep.moveTo(cntnr.pos.x, cntnr.pos.y);
                         }
                     } else {
+                        let resourcePos = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
+                        if (resourcePos != null && resourcePos.amount > 100) {
 
-                        // do nothing - only get energy from a container
-                        // this.moveToRandomLocation(creep);
-
-                        if (creep.memory.target == null || creep.memory.target == "") {
-                            let sources = creep.room.find(FIND_SOURCES_ACTIVE);
-                            let source = sources[random(1, sources.length)];
-                            let sourceId : string | undefined;
-                            if (source != undefined) {
-                                sourceId = source.id;
-                            } else {
-                                sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
+                            if (creep.pickup(resourcePos) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(resourcePos.pos.x, resourcePos.pos.y);
                             }
-                            creep.memory.target =  sourceId;
-                        }
 
-                        let sourceNode = Game.getObjectById(creep.memory.target) as Source;
-                        if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                        } else {
+
+                            // do nothing - only get energy from a container
+                            // this.moveToRandomLocation(creep);
+
+                            if (creep.memory.target == null || creep.memory.target == "") {
+                                let sources = creep.room.find(FIND_SOURCES_ACTIVE);
+                                let source = sources[random(1, sources.length)];
+                                let sourceId : string | undefined;
+                                if (source != undefined) {
+                                    sourceId = source.id;
+                                } else {
+                                    sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
+                                }
+                                creep.memory.target =  sourceId;
+                            }
+
+                            let sourceNode = Game.getObjectById(creep.memory.target) as Source;
+                            if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                            }
                         }
                     }
                 }
