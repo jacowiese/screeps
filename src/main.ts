@@ -10,6 +10,7 @@ import { TowerManager } from "tower";
 import { Miner } from "miner";
 import { Gunner } from "gunner";
 import { QuarterMaster } from "quartermaster";
+import { LinkBearer } from "linkbearer";
 
 declare global {
   /*
@@ -66,6 +67,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
   let numRangedDefenders = _.sum(Game.creeps, (c) => c.memory.role == "RANGEDDEFENDER" ? 1: 0);
   let numWallRepairers = _.sum(Game.creeps, (c) => c.memory.role == "WALLREPAIRER" ? 1: 0);
   let numQuatermasters = _.sum(Game.creeps, (c) => c.memory.role == "QUARTERMASTER" ? 1: 0);
+  let numLinkBearers = _.sum(Game.creeps, (c) => c.memory.role == "LINKBEARER" ? 1: 0);
 
   for (const spName in Game.spawns) {
     let spawn = Game.spawns[spName];
@@ -77,6 +79,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
       let turretStructures: Array<StructureTower> = spawn.room.find(FIND_MY_STRUCTURES, { filter: (k: StructureTower) => {
         return (k.structureType === STRUCTURE_TOWER);
       }}) as Array<StructureTower>;
+
+      let linkStructures: Array<StructureLink> = spawn.room.find(FIND_MY_STRUCTURES, { filter: (k) => {
+        return (k.structureType === STRUCTURE_LINK);
+      }}) as Array<StructureLink>;
 
       let creepName = spawn.room.name + "_" + spawn.name + "_" + Game.time;
 
@@ -91,28 +97,31 @@ export const loop = ErrorMapper.wrapLoop(() => {
         } else if (numHarvesters < 3) {
           let harvester: Harvester = new Harvester();
           harvester.spawnCreep(creepName, spawn);
+        } else if (numUpgraders < 2) {
+          let upgrader: Upgrader = new Upgrader();
+          upgrader.spawnCreep(creepName, spawn);
         } else if (numBuilders < 2) {
           let builder: Builder = new Builder();
           builder.spawnCreep(creepName, spawn);
+        } else if (numQuatermasters < 5 && storageStructures.length > 0) {
+          let quartermaster: QuarterMaster = new QuarterMaster();
+          quartermaster.spawnCreep(creepName, spawn);
+        } else if (numLinkBearers < 1 && linkStructures.length > 0) {
+          let linkbearer: LinkBearer = new LinkBearer();
+          linkbearer.spawnCreep(creepName, spawn);
         } else if (numGunners < 1 && turretStructures.length > 0) {
           let gunner: Gunner = new Gunner();
           gunner.spawnCreep(creepName, spawn);
         } else if (numRepairers < 1) {
           let repairer: Repairer = new Repairer();
           repairer.spawnCreep(creepName, spawn);
-        } else if (numUpgraders < 2) {
-          let upgrader: Upgrader = new Upgrader();
-          upgrader.spawnCreep(creepName, spawn);
+        } else if (numWallRepairers < 2) {
+          let wallrepairer: WallRepairer = new WallRepairer();
+          wallrepairer.spawnCreep(creepName, spawn);
         } else if (numDefenders < 2) {
           spawn.spawnCreep([ MOVE, MOVE, TOUGH, ATTACK ], creepName, { memory: {role: "DEFENDER", room: spawn.room.name }} as SpawnOptions);
         } else if (numRangedDefenders < 2) {
           spawn.spawnCreep([ MOVE, MOVE, TOUGH, RANGED_ATTACK ], creepName, { memory: {role: "RANGEDDEFENDER", room: spawn.room.name }} as SpawnOptions);
-        } else if (numWallRepairers < 2) {
-          let wallrepairer: WallRepairer = new WallRepairer();
-          wallrepairer.spawnCreep(creepName, spawn);
-        } else if (numQuatermasters < 5 && storageStructures.length > 0) {
-          let quartermaster: QuarterMaster = new QuarterMaster();
-          quartermaster.spawnCreep(creepName, spawn);
         }
     } else {
 
@@ -132,6 +141,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
     // Utilise tower manager
     let towerManager = new TowerManager();
     towerManager.update(spawn.room.name);
+
+
   }
 
   for (const creepName in Game.creeps) {
@@ -176,6 +187,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
     if (creep.memory.role === "QUARTERMASTER") {
       let quartermaster: QuarterMaster = new QuarterMaster();
       quartermaster.update(creep);
+    }
+    if (creep.memory.role === "LINKBEARER") {
+      let linkbearer: LinkBearer = new LinkBearer();
+      linkbearer.update(creep);
     }
   }
 
