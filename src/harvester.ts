@@ -53,16 +53,20 @@ export class Harvester extends BaseCreep {
 
                 } else {
 
-                    let resourcePos = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-                    if (resourcePos != null &&  resourcePos.amount > 100) {
+                    let resource: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { filter: (k: Resource) => {
+                        return (k.resourceType === RESOURCE_ENERGY && k.amount > 100);
+                    }});
+                    if (resource != null) {
 
-                        if (creep.pickup(resourcePos) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(resourcePos.pos.x, resourcePos.pos.y);
+                        if (creep.pickup(resource) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(resource.pos.x, resource.pos.y);
                         }
 
                     } else {
-                        let structures = _.filter(creep.room.find(FIND_STRUCTURES), (k) => k.structureType == STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
-                        let cntnr = this.closestStructure(creep, structures) as StructureContainer;
+
+                        let cntnr = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k: StructureContainer) => {
+                            return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
+                        }});
 
                         // if there are containers with energy, go get it from them!
                         if (cntnr != null) {
@@ -70,27 +74,19 @@ export class Harvester extends BaseCreep {
                                 creep.moveTo(cntnr.pos.x, cntnr.pos.y);
                             }
                         } else {
-                            if (creep.memory.target == null || creep.memory.target == "") {
-                                let sources = creep.room.find(FIND_SOURCES_ACTIVE);
-                                let source = sources[random(1, sources.length)];
-                                let sourceId : string | undefined;
-                                if (source != undefined) {
-                                    sourceId = source.id;
-                                } else {
-                                    sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
-                                }
-                                creep.memory.target =  sourceId;
-                                // creep.memory.flipflop = random(0, 1, false);
 
-                                if (creep.memory.flipflop == undefined || creep.memory.flipflop == 0)
-                                    creep.memory.flipflop = 1;
-                                else
-                                    creep.memory.flipflop = 0;
-                            }
-
-                            let sourceNode = Game.getObjectById(creep.memory.target) as Source;
-                            if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                            // Move to the source with the lowest respawn timer
+                            let lowestSources: Array<Source> = creep.room.find(FIND_SOURCES_ACTIVE) as Array<Source>;
+                            if (lowestSources.length > 1) {
+                                lowestSources.sort((a: Source, b: Source) => {
+                                    if (a.ticksToRegeneration < b.ticksToRegeneration) {
+                                        return -1;
+                                    }
+                                    if (a.ticksToRegeneration > b.ticksToRegeneration) {
+                                        return 1;
+                                    }
+                                    return 0;
+                                });
                             }
                         }
                     }
@@ -102,48 +98,46 @@ export class Harvester extends BaseCreep {
             if (creep.store.getUsedCapacity() > 0) {
 
                 // put the energy in an extension
-                    let exts = creep.room.find(FIND_MY_STRUCTURES, { filter: (m) => {
-                        return (m.structureType === STRUCTURE_EXTENSION && m.store.energy < 50);
-                    }}) as Array<StructureExtension>;
-                    //let ext: StructureExtension = this.closestStructure(creep, exts) as StructureExtension;
+                let ext: StructureExtension | null = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (m: StructureExtension) => {
+                    return (m.structureType === STRUCTURE_EXTENSION && m.store.energy < 50);
+                }});
 
-                    let ext: StructureExtension = exts[0];
-                    if (ext != null) {
-                        // If there is room in an extension, fill it first!
-                        if (creep.transfer(ext, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(ext.pos.x, ext.pos.y);
+                if (ext != null) {
+                    // If there is room in an extension, fill it first!
+                    if (creep.transfer(ext, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(ext.pos.x, ext.pos.y);
+                    }
+                } else {
+
+                        // if all places are full, put the energy in the spawn
+                    let spawn = creep.room.find(FIND_MY_SPAWNS)[0];
+                    if (spawn == null) {
+                        console.log("Harvester cannot find room spawn!");
+                        return;
+                    }
+
+                    if (spawn.energy < spawn.energyCapacity) {
+                        // Put energy into spawn for new creeps!
+
+                        if (creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(spawn.pos.x, spawn.pos.y);
                         }
+
                     } else {
 
-                            // if all places are full, put the energy in the spawn
-                        let spawn = creep.room.find(FIND_MY_SPAWNS)[0];
-                        if (spawn == null) {
-                            console.log("Harvester cannot find room spawn!");
-                            return;
+                        // if spawn is full, move to a random extension, in case it empties, but also make sure creep is full!
+                        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                            creep.memory.state = "MINING";
+                            creep.memory.target = "";
+                        }
+                        let exts = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_EXTENSION) as Array<StructureExtension>;
+                        let ext: StructureExtension = this.closestStructure(creep, exts) as StructureExtension;
+                        if (ext != null) {
+                            creep.moveTo(ext.pos.x, ext.pos.y);
                         }
 
-                        if (spawn.energy < spawn.energyCapacity) {
-                            // Put energy into spawn for new creeps!
-
-                            if (creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(spawn.pos.x, spawn.pos.y);
-                            }
-
-                        } else {
-
-                            // if spawn is full, move to a random extension, in case it empties, but also make sure creep is full!
-                            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-                                creep.memory.state = "MINING";
-                                creep.memory.target = "";
-                            }
-                            let exts = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_EXTENSION) as Array<StructureExtension>;
-                            let ext: StructureExtension = this.closestStructure(creep, exts) as StructureExtension;
-                            if (ext != null) {
-                                creep.moveTo(ext.pos.x, ext.pos.y);
-                            }
-
-                        }
                     }
+                }
             } else {
                 creep.memory.state = "MINING";
                 creep.memory.target = "";

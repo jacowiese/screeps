@@ -60,39 +60,14 @@ export class QuarterMaster extends BaseCreep {
                         }
 
                     } else {
-                        let structures = creep.room.find(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
+                        let container: StructureContainer | null = creep.pos.findClosestByPath(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
                             return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
                         }});
 
-                        let cntnr = this.closestStructure(creep, structures) as StructureContainer;
-
                         // if there are containers with energy, go get it from them!
-                        if (cntnr != null) {
-                            if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(cntnr.pos.x, cntnr.pos.y);
-                            }
-                        } else {
-                            if (creep.memory.target == null || creep.memory.target == "") {
-                                let sources = creep.room.find(FIND_SOURCES_ACTIVE);
-                                let source = sources[random(1, sources.length)];
-                                let sourceId : string | undefined;
-                                if (source != undefined) {
-                                    sourceId = source.id;
-                                } else {
-                                    sourceId = creep.room.find(FIND_SOURCES_ACTIVE)[0].id;
-                                }
-                                creep.memory.target =  sourceId;
-                                // creep.memory.flipflop = random(0, 1, false);
-
-                                if (creep.memory.flipflop == undefined || creep.memory.flipflop == 0)
-                                    creep.memory.flipflop = 1;
-                                else
-                                    creep.memory.flipflop = 0;
-                            }
-
-                            let sourceNode = Game.getObjectById(creep.memory.target) as Source;
-                            if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                        if (container != null) {
+                            if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(container.pos.x, container.pos.y);
                             }
                         }
                     }
