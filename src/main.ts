@@ -91,10 +91,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
       console.log("Energy available: " + spawn.room.energyAvailable + " / Energy capacity: " + spawn.room.energyCapacityAvailable);
       if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable && numMiners >= 1 && numHarvesters >= 1) {
 
-        if (numMiners < 2) {
+        if (numMiners < 4) {
           let miner: Miner = new Miner();
           miner.spawnCreep(creepName, spawn);
-        } else if (numHarvesters < 5) {
+        } else if (numHarvesters < 4) {
           let harvester: Harvester = new Harvester();
           harvester.spawnCreep(creepName, spawn);
         } else if (numUpgraders < 1) {
@@ -103,7 +103,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
         } else if (numBuilders < 2) {
           let builder: Builder = new Builder();
           builder.spawnCreep(creepName, spawn);
-        } else if (numRepairers < 1) {
+        } else if (numRepairers < 2) {
           let repairer: Repairer = new Repairer();
           repairer.spawnCreep(creepName, spawn);
         } else if (numWallRepairers < 1) {
@@ -118,9 +118,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
         } else if (numGunners < 1 && turretStructures.length > 0) {
           let gunner: Gunner = new Gunner();
           gunner.spawnCreep(creepName, spawn);
-        } else if (numDefenders < 2) {
+        } else if (numDefenders < 1) {
           spawn.spawnCreep([ MOVE, MOVE, TOUGH, ATTACK ], creepName, { memory: {role: "DEFENDER", room: spawn.room.name }} as SpawnOptions);
-        } else if (numRangedDefenders < 2) {
+        } else if (numRangedDefenders < 1) {
           spawn.spawnCreep([ MOVE, MOVE, TOUGH, RANGED_ATTACK ], creepName, { memory: {role: "RANGEDDEFENDER", room: spawn.room.name }} as SpawnOptions);
         }
     } else {

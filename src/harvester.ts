@@ -78,14 +78,14 @@ export class Harvester extends BaseCreep {
                             // Move to the source with the lowest respawn timer
                             let lowestSources: Array<Source> = creep.room.find(FIND_SOURCES_ACTIVE) as Array<Source>;
                             if (lowestSources.length > 1) {
-                                lowestSources.sort((a: Source, b: Source) => {
-                                    if (a.ticksToRegeneration < b.ticksToRegeneration) {
-                                        return -1;
-                                    }
-                                    if (a.ticksToRegeneration > b.ticksToRegeneration) {
-                                        return 1;
-                                    }
-                                    return 0;
+                                lowestSources.sort((a: Source, b: Source) => { return a.ticksToRegeneration - b.ticksToRegeneration
+                                    // if (a.ticksToRegeneration < b.ticksToRegeneration) {
+                                    //     return -1;
+                                    // }
+                                    // if (a.ticksToRegeneration > b.ticksToRegeneration) {
+                                    //     return 1;
+                                    // }
+                                    // return 0;
                                 });
                             }
                         }

@@ -45,7 +45,8 @@ export class Miner extends BaseCreep {
 
         if (creep.memory.target != undefined || creep.memory.target != "") {
             let sourceNode = Game.getObjectById(creep.memory.target as string) as Source;
-            if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
+            let result = creep.harvest(sourceNode);
+            if (result === ERR_NOT_IN_RANGE) {
                 creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
                 console.log(creep.name + " - " + creep.memory.flipflop);
                 if (creep.memory.flipflop != undefined) {
@@ -55,23 +56,47 @@ export class Miner extends BaseCreep {
                         this.selectSource(creep);
                     }
                 }
+            } else if (result === ERR_NOT_ENOUGH_RESOURCES) {
+
+                this.selectSource(creep);
             }
         }
     }
 
     private selectSource(creep: Creep): void {
-            let sources: Array<Source> = creep.room.find(FIND_SOURCES_ACTIVE) as Array<Source>;
+            let sources: Array<Source> = creep.room.find(FIND_SOURCES_ACTIVE, {filter: (k: Source) => {
+                return (k.energy > 0);
+            }}) as Array<Source>;
 
             let sourceId: string | undefined = "";
-            let targetCount = 100;
-            sources.forEach((tempSrc) => {
+            if (sources.length > 0) {
+                let targetCount = 100;
+                sources.forEach((tempSrc) => {
 
-                let result = this.targetCount(tempSrc.id);
-                if (result < targetCount) {
-                    targetCount = result;
-                    sourceId = tempSrc.id;
+                    let result = this.targetCount(tempSrc.id);
+                    if (result < targetCount) {
+                        targetCount = result;
+                        sourceId = tempSrc.id;
+                    }
+                });
+            } else {
+
+                let emptySources:Array<Source> = creep.room.find(FIND_SOURCES);
+                if (emptySources.length > 0) {
+
+                    emptySources.sort((a: Source, b: Source) => {
+                        if (a.ticksToRegeneration < b.ticksToRegeneration)
+                            return -1;
+                        if (a.ticksToRegeneration > b.ticksToRegeneration)
+                            return 1;
+
+                        return 0;
+                    });
+
+                    sourceId = emptySources[0].id;
+                    creep.moveTo(emptySources[0].pos.x, emptySources[0].pos.y);
                 }
-            });
+            }
 
             creep.memory.target = sourceId;
             creep.memory.flipflop = 0;
