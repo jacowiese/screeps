@@ -117,8 +117,10 @@ export class Builder extends BaseCreep {
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 
-                // let building = _.filter(creep.room.find(FIND_MY_CONSTRUCTION_SITES), (s) => s.progress < s.progressTotal)[0];
-                let building = this.closestConstructionSite(creep);
+                let building: ConstructionSite | null = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES, { filter: (k: ConstructionSite) => {
+                    return (k.progress < k.progressTotal);
+                }});
+
                 if (building != null) {
                     // If construction site is not finished, go and build it!
                     if (creep.build(building) == ERR_NOT_IN_RANGE) {

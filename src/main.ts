@@ -11,9 +11,12 @@ import { Miner } from "miner";
 import { Gunner } from "gunner";
 import { QuarterMaster } from "quartermaster";
 import { LinkBearer } from "linkbearer";
+import { Healer } from "healer";
 
 declare global {
   /*
+    BODYPART_COST: { "move": 50, "work": 100, "attack": 80, "carry": 50, "heal": 250, "ranged_attack": 150, "tough": 10, "claim": 600 }
+
     Example types, expand on these or remove them and add your own.
     Note: Values, properties defined here do no fully *exist* by this type definition alone.
           You must also give them an implementation if you would like to use them. (ex. actually setting a `role` property in a Creeps memory)
@@ -68,6 +71,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
   let numWallRepairers = _.sum(Game.creeps, (c) => c.memory.role == "WALLREPAIRER" ? 1: 0);
   let numQuartermasters = _.sum(Game.creeps, (c) => c.memory.role == "QUARTERMASTER" ? 1: 0);
   let numLinkBearers = _.sum(Game.creeps, (c) => c.memory.role == "LINKBEARER" ? 1: 0);
+  let numHealers = _.sum(Game.creeps, (c) => c.memory.role == "HEALER" ? 1: 0);
 
   for (const spName in Game.spawns) {
     let spawn = Game.spawns[spName];
@@ -89,7 +93,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
       let roomLevel = (spawn.room.controller != null) ? spawn.room.controller.level : 1;
 
       console.log("Energy available: " + spawn.room.energyAvailable + " / Energy capacity: " + spawn.room.energyCapacityAvailable);
-      if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable && numMiners >= 1 && numHarvesters >= 1) {
+      // if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable && numMiners >= 1 && numHarvesters >= 1) {
 
         if (numMiners < 4) {
           let miner: Miner = new Miner();
@@ -109,6 +113,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
         } else if (numWallRepairers < 1) {
           let wallrepairer: WallRepairer = new WallRepairer();
           wallrepairer.spawnCreep(creepName, spawn);
+        } else if (numHealers < 1) {
+          let healer: Healer = new Healer();
+          healer.spawnCreep(creepName, spawn);
         } else if (numQuartermasters < 2 && storageStructures.length > 0) {
           let quartermaster: QuarterMaster = new QuarterMaster();
           quartermaster.spawnCreep(creepName, spawn);
@@ -123,20 +130,20 @@ export const loop = ErrorMapper.wrapLoop(() => {
         } else if (numRangedDefenders < 1) {
           spawn.spawnCreep([ MOVE, MOVE, TOUGH, RANGED_ATTACK ], creepName, { memory: {role: "RANGEDDEFENDER", room: spawn.room.name }} as SpawnOptions);
         }
-    } else {
+    // } else {
 
-      // We cannot work without miners!
-      if (numMiners < 1) {
-        let miner: Miner = new Miner();
-        miner.spawnCreep(creepName, spawn);
-      }
+    //   // We cannot work without miners!
+    //   if (numMiners < 1) {
+    //     let miner: Miner = new Miner();
+    //     miner.spawnCreep(creepName, spawn);
+    //   }
 
-      // Or harvesters!
-      if (numHarvesters < 1) {
-        let harvester: Harvester = new Harvester();
-        harvester.spawnCreep(creepName, spawn);
-      }
-    }
+    //   // Or harvesters!
+    //   if (numHarvesters < 1) {
+    //     let harvester: Harvester = new Harvester();
+    //     harvester.spawnCreep(creepName, spawn);
+    //   }
+    // }
 
     // Utilise tower manager
     let towerManager = new TowerManager();
@@ -192,9 +199,14 @@ export const loop = ErrorMapper.wrapLoop(() => {
       let linkbearer: LinkBearer = new LinkBearer();
       linkbearer.update(creep);
     }
+    if (creep.memory.role === "HEALER") {
+      let healer: Healer = new Healer();
+      healer.update(creep);
+    }
   }
 
   // Code to run for each room
-
+  console.log("CPU: " + Game.cpu.limit);
+  Game.cpu.generatePixel();
 
 });

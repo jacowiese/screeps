@@ -42,16 +42,20 @@ export class LinkBearer extends BaseCreep {
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
-                let resourcePos = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-                if (resourcePos != null &&  resourcePos.amount > 100) {
+                let resource: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { filter: (k: Resource) => {
+                    return (k.resourceType === RESOURCE_ENERGY && k.amount > 100);
+                }});
+                if (resource != null) {
 
-                    if (creep.pickup(resourcePos) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(resourcePos.pos.x, resourcePos.pos.y);
+                    if (creep.pickup(resource) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(resource.pos.x, resource.pos.y);
                     }
 
                 } else {
-                    let structures = _.filter(creep.room.find(FIND_STRUCTURES), (k) => k.structureType == STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
-                    let cntnr = this.closestStructure(creep, structures) as StructureContainer;
+
+                    let cntnr = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k: StructureContainer) => {
+                        return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
+                    }});
 
                     // if there are containers with energy, go get it from them!
                     if (cntnr != null) {
@@ -67,7 +71,7 @@ export class LinkBearer extends BaseCreep {
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 
-                let link = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k) => {
+                let link: StructureLink | null = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k) => {
                     return (k.structureType === STRUCTURE_LINK && k.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
                 }});
 
