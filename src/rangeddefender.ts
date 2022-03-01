@@ -42,6 +42,25 @@ export class RangedDefender extends BaseCreep {
 
         super.update(creep);
 
+        let flag: Flag = Game.flags['defend'];
+        for (const fname in Game.flags) {
+            if (fname === 'defend') {
+                flag = Game.flags[fname];
+                break;
+            }
+        }
+
+        // If there is a build flag, go there and build!
+        if (flag != undefined) {
+
+            if (creep.pos.roomName !== flag.pos.roomName) {
+
+                console.log("Ranged defender moving to room: " + flag.pos.roomName);
+                creep.moveTo(flag);
+                return;
+            }
+        }
+
         // defend!
         let hostile = creep.room.find(FIND_HOSTILE_CREEPS)[0];
         if (hostile != null) {
