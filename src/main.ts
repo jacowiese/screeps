@@ -12,6 +12,7 @@ import { Gunner } from "gunner";
 import { QuarterMaster } from "quartermaster";
 import { LinkBearer } from "linkbearer";
 import { Healer } from "healer";
+import { Explorer } from "explorer";
 
 declare global {
   /*
@@ -60,21 +61,23 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
   }
 
-  let numMiners = _.sum(Game.creeps, (c) => c.memory.role == "MINER" ? 1 : 0);
-  let numHarvesters = _.sum(Game.creeps, (c) => c.memory.role == "HARVESTER" ? 1 : 0);
-  let numBuilders = _.sum(Game.creeps, (c) => c.memory.role == "BUILDER" ? 1 : 0);
-  let numRepairers = _.sum(Game.creeps, (c) => c.memory.role == "REPAIRER" ? 1 : 0);
-  let numGunners = _.sum(Game.creeps, (c) => c.memory.role == "GUNNER" ? 1 : 0);
-  let numUpgraders = _.sum(Game.creeps, (c) => c.memory.role == "UPGRADER" ? 1: 0);
-  let numDefenders = _.sum(Game.creeps, (c) => c.memory.role == "DEFENDER" ? 1: 0);
-  let numRangedDefenders = _.sum(Game.creeps, (c) => c.memory.role == "RANGEDDEFENDER" ? 1: 0);
-  let numWallRepairers = _.sum(Game.creeps, (c) => c.memory.role == "WALLREPAIRER" ? 1: 0);
-  let numQuartermasters = _.sum(Game.creeps, (c) => c.memory.role == "QUARTERMASTER" ? 1: 0);
-  let numLinkBearers = _.sum(Game.creeps, (c) => c.memory.role == "LINKBEARER" ? 1: 0);
-  let numHealers = _.sum(Game.creeps, (c) => c.memory.role == "HEALER" ? 1: 0);
-
   for (const spName in Game.spawns) {
-    let spawn = Game.spawns[spName];
+    let spawn = Game.spawns[spName] as StructureSpawn;
+    let spawnRoom: Room = spawn.room;
+
+    let numMiners = _.sum(Game.creeps, (c) => c.memory.role == "MINER" && c.room.name === spawnRoom.name ? 1 : 0);
+    let numHarvesters = _.sum(Game.creeps, (c) => c.memory.role == "HARVESTER" && c.room.name === spawnRoom.name ? 1 : 0);
+    let numBuilders = _.sum(Game.creeps, (c) => c.memory.role == "BUILDER" && c.room.name === spawnRoom.name ? 1 : 0);
+    let numRepairers = _.sum(Game.creeps, (c) => c.memory.role == "REPAIRER" && c.room.name === spawnRoom.name ? 1 : 0);
+    let numGunners = _.sum(Game.creeps, (c) => c.memory.role == "GUNNER" && c.room.name === spawnRoom.name ? 1 : 0);
+    let numUpgraders = _.sum(Game.creeps, (c) => c.memory.role == "UPGRADER" && c.room.name === spawnRoom.name ? 1: 0);
+    let numDefenders = _.sum(Game.creeps, (c) => c.memory.role == "DEFENDER" && c.room.name === spawnRoom.name ? 1: 0);
+    let numRangedDefenders = _.sum(Game.creeps, (c) => c.memory.role == "RANGEDDEFENDER" && c.room.name === spawnRoom.name ? 1: 0);
+    let numWallRepairers = _.sum(Game.creeps, (c) => c.memory.role == "WALLREPAIRER" && c.room.name === spawnRoom.name ? 1: 0);
+    let numQuartermasters = _.sum(Game.creeps, (c) => c.memory.role == "QUARTERMASTER" && c.room.name === spawnRoom.name ? 1: 0);
+    let numLinkBearers = _.sum(Game.creeps, (c) => c.memory.role == "LINKBEARER" && c.room.name === spawnRoom.name ? 1: 0);
+    let numHealers = _.sum(Game.creeps, (c) => c.memory.role == "HEALER" && c.room.name === spawnRoom.name ? 1: 0);
+    let numExplorers = _.sum(Game.creeps, (c) => c.memory.role == "EXPLORER" && c.room.name === spawnRoom.name ? 1: 0);
 
       let storageStructures = spawn.room.find(FIND_STRUCTURES, { filter: (k: StructureStorage) => {
         return (k.structureType === STRUCTURE_STORAGE);
@@ -89,22 +92,24 @@ export const loop = ErrorMapper.wrapLoop(() => {
       }}) as Array<StructureLink>;
 
       let creepName = spawn.room.name + "_" + spawn.name + "_" + Game.time;
+      // console.log("Creep: " + creepName);
 
       let roomLevel = (spawn.room.controller != null) ? spawn.room.controller.level : 1;
 
-      console.log("Energy available: " + spawn.room.energyAvailable + " / Energy capacity: " + spawn.room.energyCapacityAvailable);
+      console.log("Room: " + spawnRoom.name + " Energy: " + spawnRoom.energyAvailable + " / Capacity: " + spawnRoom.energyCapacityAvailable);
       // if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable && numMiners >= 1 && numHarvesters >= 1) {
 
-        if (numMiners < 4) {
+      if (numMiners >= 1 && numHarvesters >= 1) {
+        if (numMiners < 3) {
           let miner: Miner = new Miner();
           miner.spawnCreep(creepName, spawn);
-        } else if (numHarvesters < 4) {
+        } else if (numHarvesters < 3) {
           let harvester: Harvester = new Harvester();
           harvester.spawnCreep(creepName, spawn);
         } else if (numUpgraders < 1) {
           let upgrader: Upgrader = new Upgrader();
           upgrader.spawnCreep(creepName, spawn);
-        } else if (numBuilders < 2) {
+        } else if (numBuilders < 5) {
           let builder: Builder = new Builder();
           builder.spawnCreep(creepName, spawn);
         } else if (numRepairers < 2) {
@@ -129,21 +134,24 @@ export const loop = ErrorMapper.wrapLoop(() => {
           spawn.spawnCreep([ MOVE, MOVE, TOUGH, ATTACK ], creepName, { memory: {role: "DEFENDER", room: spawn.room.name }} as SpawnOptions);
         } else if (numRangedDefenders < 1) {
           spawn.spawnCreep([ MOVE, MOVE, TOUGH, RANGED_ATTACK ], creepName, { memory: {role: "RANGEDDEFENDER", room: spawn.room.name }} as SpawnOptions);
+        } else if (numExplorers < 1) {
+          let explorer: Explorer = new Explorer();
+          explorer.spawnCreep(creepName, spawn);
         }
-    // } else {
+     } else {
 
-    //   // We cannot work without miners!
-    //   if (numMiners < 1) {
-    //     let miner: Miner = new Miner();
-    //     miner.spawnCreep(creepName, spawn);
-    //   }
+      // We cannot work without miners!
+      if (numMiners < 1) {
+        let miner: Miner = new Miner();
+        miner.spawnCreep(creepName, spawn);
+      }
 
-    //   // Or harvesters!
-    //   if (numHarvesters < 1) {
-    //     let harvester: Harvester = new Harvester();
-    //     harvester.spawnCreep(creepName, spawn);
-    //   }
-    // }
+      // Or harvesters!
+      if (numHarvesters < 1) {
+        let harvester: Harvester = new Harvester();
+        harvester.spawnCreep(creepName, spawn);
+      }
+    }
 
     // Utilise tower manager
     let towerManager = new TowerManager();
@@ -203,10 +211,14 @@ export const loop = ErrorMapper.wrapLoop(() => {
       let healer: Healer = new Healer();
       healer.update(creep);
     }
+    if (creep.memory.role === "EXPLORER") {
+      let explorer: Explorer = new Explorer();
+      explorer.update(creep);
+    }
   }
 
   // Code to run for each room
-  console.log("CPU: " + Game.cpu.limit);
+  // console.log("CPU: " + Game.cpu.limit);
   Game.cpu.generatePixel();
 
 });

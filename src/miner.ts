@@ -48,7 +48,7 @@ export class Miner extends BaseCreep {
             let result = creep.harvest(sourceNode);
             if (result === ERR_NOT_IN_RANGE) {
                 creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
-                console.log(creep.name + " - " + creep.memory.flipflop);
+                // console.log(creep.name + " - " + creep.memory.flipflop);
                 if (creep.memory.flipflop != undefined) {
                     creep.memory.flipflop = creep.memory.flipflop + 1;
                     // 5 retries, and then it tries another source

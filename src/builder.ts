@@ -40,6 +40,24 @@ export class Builder extends BaseCreep {
 
     public update(creep: Creep): void {
 
+        let flag: Flag = Game.flags['build'];
+        for (const fname in Game.flags) {
+            if (fname === 'build') {
+                flag = Game.flags[fname];
+                break;
+            }
+        }
+        // If there is a build flag, go there and build!
+        if (flag != undefined) {
+
+            if (creep.pos.roomName !== flag.pos.roomName) {
+
+                console.log("Builder moving to room: " + flag.pos.roomName);
+                creep.moveTo(flag);
+                return;
+            }
+        }
+
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 

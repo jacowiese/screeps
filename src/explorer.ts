@@ -1,62 +1,71 @@
+import { BaseCreep } from "basecreep";
 
-export class Explorer {
+export class Explorer extends BaseCreep{
 
     public constructor() {
+        super();
+    }
+
+    public spawnCreep(creepName: string, spawn: StructureSpawn): void {
+        super.spawnCreep(creepName, spawn);
+
+        let creepMemory: CreepMemory = {role: "EXPLORER", state: "EXPLORE", room: spawn.room.name };
+
+        let body: Array<BodyPartConstant> = new Array<BodyPartConstant>();
+
+        let numParts = Math.floor(spawn.room.energyAvailable / 700);
+        if (numParts == 0) {
+            return;
+        }
+
+        body.push(MOVE);
+        body.push(MOVE);
+        body.push(CLAIM);
+
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+
+        console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
+
+        switch (result) {
+            case ERR_NOT_ENOUGH_ENERGY: {
+                console.log('Could not spawn explorer: not enough energy!');
+            }
+        }
     }
 
     public update(creep: Creep): void {
 
-        if (creep.memory.state == "MINING") {
-            if (creep.store.getFreeCapacity() != 0) {
-                let cntnr = _.filter(creep.room.find(FIND_STRUCTURES), (k) => k.structureType == STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 0)[0];
-                // if there are containers with energy, go get it from them!
-                if (cntnr != null) {
-                    if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(cntnr.pos.x, cntnr.pos.y);
-                    }
-                } else {
-
-                    // go directly to the source node
-                    let sourceNode = creep.room.find(FIND_SOURCES_ACTIVE)[0];
-                    if (sourceNode == null)
-                        return;
-
-                    if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
-                    }
-                }
-
-            } else {
-                creep.memory.state = "WORKING";
-            }
-        } else if (creep.memory.state == "WORKING") {
-            if (creep.store.getUsedCapacity() > 0) {
-
-                // let toExit = creep.room.findExitTo(creep.room.name);
-                // creep.move(toExit);
-
-                console.log("I'm the explorer in room: " + creep.room.name);
-
-                let exit = creep.room.find(FIND_EXIT)[0];
-                console.log(exit);
-
-                if (creep.room.controller != null) {
-                    if (creep.room.controller.owner == undefined) {
-                        console.log("Claiming controller!");
-
-                        if (creep.claimController(creep.room.controller) != ERR_NOT_IN_RANGE) {
-                            creep.moveTo(creep.room.controller.pos.x, creep.room.controller.pos.y);
-                        }
-                    }
-                } else {
-
-                    // Move on to the next room
-                    creep.moveTo(exit.x, exit.y);
-                }
-
-            } else {
-                creep.memory.state = "MINING";
+        let flag: Flag = Game.flags['claim'];
+        for (const fname in Game.flags) {
+            if (fname === 'claim') {
+                flag = Game.flags[fname];
+                break;
             }
         }
+
+        if (flag != undefined) {
+
+
+            // If the creep is in the claim flag room, do its thing!
+            if (creep.pos.roomName === flag.pos.roomName) {
+
+                let targetRoom: Room = Game.rooms[flag.pos.roomName];
+                if (targetRoom.controller != undefined) {
+
+                    // If there is a controller in the claim flag room, try to claim it!
+                    if (creep.claimController(targetRoom.controller) === ERR_NOT_IN_RANGE) {
+
+                        creep.moveTo(targetRoom.controller.pos.x, targetRoom.controller.pos.y);
+                    }
+                }
+            } else {
+
+                // If the creep is not in the claim flag room, go to it first!
+                creep.moveTo(flag);
+
+            }
+        }
+
+
     }
 }
