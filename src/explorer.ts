@@ -22,7 +22,7 @@ export class Explorer extends BaseCreep{
         body.push(MOVE);
         body.push(CLAIM);
 
-        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName + "_explorer", { memory: creepMemory });
 
         console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
 

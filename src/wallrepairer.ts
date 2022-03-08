@@ -26,7 +26,7 @@ export class WallRepairer extends BaseCreep {
             body.push(CARRY);
         }
 
-        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName + "_wallRepairer", { memory: creepMemory });
 
         console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
 

@@ -27,7 +27,7 @@ export class Defender extends BaseCreep {
             body.push(ATTACK); // 80
         }
 
-        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName + "_defender", { memory: creepMemory });
 
         console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
 

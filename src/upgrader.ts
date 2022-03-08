@@ -26,7 +26,7 @@ export class Upgrader extends BaseCreep {
             body.push(CARRY);
         }
 
-        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName + "_upgrader", { memory: creepMemory });
 
         console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
 
@@ -42,34 +42,45 @@ export class Upgrader extends BaseCreep {
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
-                let storage:Array<StructureStorage> = creep.room.find(FIND_MY_STRUCTURES, { filter: (k: StructureStorage) => {
-                    return (k.structureType === STRUCTURE_STORAGE && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
-                }}) as Array<StructureStorage>;
-                if (storage.length > 0) {
+                let link = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k) => {
+                    return (k.structureType === STRUCTURE_LINK && k.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
+                }});
+                if (link != undefined || link != null) {
 
-                    if (creep.withdraw(storage[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(storage[0].pos.x, storage[0].pos.y);
+                    if (creep.withdraw(link, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(link.pos.x, link.pos.y);
                     }
 
                 } else {
-                    let container: StructureContainer | null = creep.pos.findClosestByPath(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
-                        return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
-                    }});
+                    let storage:Array<StructureStorage> = creep.room.find(FIND_MY_STRUCTURES, { filter: (k: StructureStorage) => {
+                        return (k.structureType === STRUCTURE_STORAGE && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
+                    }}) as Array<StructureStorage>;
+                    if (storage.length > 0) {
 
-                    // if there are containers with energy, go get it from them!
-                    if (container != null) {
-                        if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(container.pos.x, container.pos.y);
+                        if (creep.withdraw(storage[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(storage[0].pos.x, storage[0].pos.y);
                         }
+
                     } else {
+                        let container: StructureContainer | null = creep.pos.findClosestByPath(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
+                            return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
+                        }});
 
-                        let resourcePos = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-                        if (resourcePos != null && resourcePos.amount > 100) {
-
-                            if (creep.pickup(resourcePos) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(resourcePos.pos.x, resourcePos.pos.y);
+                        // if there are containers with energy, go get it from them!
+                        if (container != null) {
+                            if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(container.pos.x, container.pos.y);
                             }
+                        } else {
 
+                            let resourcePos = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
+                            if (resourcePos != null && resourcePos.amount > 100) {
+
+                                if (creep.pickup(resourcePos) == ERR_NOT_IN_RANGE) {
+                                    creep.moveTo(resourcePos.pos.x, resourcePos.pos.y);
+                                }
+
+                            }
                         }
                     }
                 }

@@ -27,7 +27,7 @@ export class RangedDefender extends BaseCreep {
             body.push(RANGED_ATTACK); // 150
         }
 
-        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName + "_rangedDefender", { memory: creepMemory });
 
         console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
 

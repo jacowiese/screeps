@@ -3,8 +3,11 @@ import { random } from "lodash";
 
 export class LinkBearer extends BaseCreep {
 
-    public constructor() {
+    private linkNodes: Array<LinkNode>;
+
+    public constructor(linkNodes: Array<LinkNode>) {
         super();
+        this.linkNodes = linkNodes;
     }
 
     public spawnCreep(creepName: string, spawn: StructureSpawn): void {
@@ -25,7 +28,7 @@ export class LinkBearer extends BaseCreep {
             body.push(CARRY);
         }
 
-        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName + "_linkBearer", { memory: creepMemory });
 
         console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
 
@@ -71,16 +74,35 @@ export class LinkBearer extends BaseCreep {
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 
-                let link: StructureLink | null = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k) => {
-                    return (k.structureType === STRUCTURE_LINK && k.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
-                }});
 
-                if (link != undefined || link != null) {
+                this.linkNodes.forEach((node: LinkNode) => {
 
-                    if (creep.transfer(link, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(link.pos.x, link.pos.y);
+                    let targetNode: StructureLink = Game.getObjectById<StructureLink>(node.target) as StructureLink;
+                    if (creep.room.name == targetNode.room.name) {
+
+                        // Only in the same room as the creep
+
+                        let closestNode: StructureLink | null = null;
+                        let range: number = Number.MAX_VALUE;
+                        node.source.forEach((id: string) => {
+
+                            let tempSrcNode: StructureLink = Game.getObjectById<StructureLink>(id) as StructureLink;
+                            let r: number = creep.pos.getRangeTo(tempSrcNode.pos);
+                            if (r < range) {
+                                closestNode = tempSrcNode;
+                                range = r;
+                            }
+                        });
+
+                        if (closestNode != null) {
+                            console.log("Linkbearer going to: " + closestNode);
+                            if (creep.transfer(closestNode, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(closestNode);
+                            }
+                        }
+
                     }
-                }
+                });
 
             } else {
                 creep.memory.state = "MINING";

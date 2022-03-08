@@ -1,5 +1,6 @@
 import { BaseCreep } from "basecreep";
 import { random } from "lodash";
+import { QuarterMaster } from "quartermaster";
 
 export class Harvester extends BaseCreep {
 
@@ -25,7 +26,7 @@ export class Harvester extends BaseCreep {
             body.push(CARRY);
         }
 
-        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName + "_harvester", { memory: creepMemory });
 
         console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
 
@@ -126,15 +127,19 @@ export class Harvester extends BaseCreep {
                     } else {
 
                         // if spawn is full, move to a random extension, in case it empties, but also make sure creep is full!
-                        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-                            creep.memory.state = "MINING";
-                            creep.memory.target = "";
-                        }
-                        let exts = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_EXTENSION) as Array<StructureExtension>;
-                        let ext: StructureExtension = this.closestStructure(creep, exts) as StructureExtension;
-                        if (ext != null) {
-                            creep.moveTo(ext.pos.x, ext.pos.y);
-                        }
+                        // if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                        //     creep.memory.state = "MINING";
+                        //     creep.memory.target = "";
+                        // }
+                        // let exts = _.filter(creep.room.find(FIND_MY_STRUCTURES), (m) => m.structureType == STRUCTURE_EXTENSION) as Array<StructureExtension>;
+                        // let ext: StructureExtension = this.closestStructure(creep, exts) as StructureExtension;
+                        // if (ext != null) {
+                        //     creep.moveTo(ext.pos.x, ext.pos.y);
+                        // }
+
+                        // Fill storage!
+                        let qmaster: QuarterMaster = new QuarterMaster();
+                        qmaster.update(creep);
 
                     }
                 }

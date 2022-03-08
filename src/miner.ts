@@ -25,7 +25,7 @@ export class Miner extends BaseCreep {
             body.push(WORK);
         }
 
-        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName + "_miner", { memory: creepMemory });
 
         console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
 
@@ -52,7 +52,7 @@ export class Miner extends BaseCreep {
                 if (creep.memory.flipflop != undefined) {
                     creep.memory.flipflop = creep.memory.flipflop + 1;
                     // 5 retries, and then it tries another source
-                    if (creep.memory.flipflop > 5 && this.countRoles("MINER") > 1) {
+                    if (creep.memory.flipflop > 10 && this.countRoles("MINER") > 1) {
                         this.selectSource(creep);
                     }
                 }

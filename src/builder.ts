@@ -27,7 +27,7 @@ export class Builder extends BaseCreep {
             body.push(CARRY);
         }
 
-        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName, { memory: creepMemory });
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName + "_builder", { memory: creepMemory });
 
         console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
 
@@ -71,25 +71,6 @@ export class Builder extends BaseCreep {
                     }
 
                 } else {
-
-                    let storage:Array<StructureStorage> = creep.room.find(FIND_MY_STRUCTURES, { filter: (k: StructureStorage) => {
-                        return (k.structureType === STRUCTURE_STORAGE && k.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
-                    }}) as Array<StructureStorage>;
-                    if (storage.length > 0) {
-
-                        if (creep.withdraw(storage[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(storage[0].pos.x, storage[0].pos.y);
-                        }
-
-                    } else {
-                        let resourcePos = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-                        if (resourcePos != null && resourcePos.amount > 100) {
-
-                            if (creep.pickup(resourcePos) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(resourcePos.pos.x, resourcePos.pos.y);
-                            }
-
-                        } else {
                             let structures = creep.room.find(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
                                 return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
                             }});
@@ -100,7 +81,18 @@ export class Builder extends BaseCreep {
                                 if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                                     creep.moveTo(cntnr.pos.x, cntnr.pos.y);
                                 }
-                            } else {
+                            }  else {
+
+                                let storage:Array<StructureStorage> = creep.room.find(FIND_MY_STRUCTURES, { filter: (k: StructureStorage) => {
+                                    return (k.structureType === STRUCTURE_STORAGE && k.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
+                                }}) as Array<StructureStorage>;
+                                if (storage.length > 0) {
+
+                                    if (creep.withdraw(storage[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                        creep.moveTo(storage[0].pos.x, storage[0].pos.y);
+                                    }
+
+                                } else {
 
                                 // go directly to the source node
 
@@ -125,7 +117,6 @@ export class Builder extends BaseCreep {
                                 // if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
                                 //     creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
                                 // }
-                            }
                         }
                     }
                 }

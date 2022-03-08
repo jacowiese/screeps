@@ -13,6 +13,7 @@ import { QuarterMaster } from "quartermaster";
 import { LinkBearer } from "linkbearer";
 import { Healer } from "healer";
 import { Explorer } from "explorer";
+import { LinkManager } from "linkmanager";
 
 declare global {
   /*
@@ -39,6 +40,12 @@ declare global {
     flipflop?: number;
   }
 
+  // Used for link structures
+  interface LinkNode {
+    target: string;
+    source: Array<string>;
+  }
+
   // Syntax for adding properties to `global` (ex "global.log")
   namespace NodeJS {
     interface Global {
@@ -46,8 +53,13 @@ declare global {
     }
   }
 
-
 }
+
+const LinkNodes: Array<LinkNode> = [
+
+  { target:"621397690f1d5e04031db3d1", source:["622666c4d1cdfb135e4ab1f6"] },
+
+];
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -61,6 +73,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
   }
 
+  let spawnLogicCPU: number = Game.cpu.getUsed();
   for (const spName in Game.spawns) {
     let spawn = Game.spawns[spName] as StructureSpawn;
     let spawnRoom: Room = spawn.room;
@@ -91,12 +104,14 @@ export const loop = ErrorMapper.wrapLoop(() => {
         return (k.structureType === STRUCTURE_LINK);
       }}) as Array<StructureLink>;
 
-      let creepName = spawn.room.name + "_" + spawn.name + "_" + Game.time;
+      // console.log("LinkStructures: " + linkStructures.length + " - " + spawnRoom.name);
+
+      let creepName = spawn.name + "_" + Game.time;
       // console.log("Creep: " + creepName);
 
       let roomLevel = (spawn.room.controller != null) ? spawn.room.controller.level : 1;
 
-      console.log("Room: " + spawnRoom.name + " Energy: " + spawnRoom.energyAvailable + " / Capacity: " + spawnRoom.energyCapacityAvailable);
+      // console.log("Room: " + spawnRoom.name + " Energy: " + spawnRoom.energyAvailable + " / Capacity: " + spawnRoom.energyCapacityAvailable);
       // if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable && numMiners >= 1 && numHarvesters >= 1) {
 
       if (numMiners >= 1 && numHarvesters >= 1) {
@@ -109,7 +124,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
         } else if (numUpgraders < 1) {
           let upgrader: Upgrader = new Upgrader();
           upgrader.spawnCreep(creepName, spawn);
-        } else if (numBuilders < 5) {
+        } else if (numBuilders < 3) {
           let builder: Builder = new Builder();
           builder.spawnCreep(creepName, spawn);
         } else if (numRepairers < 2) {
@@ -125,7 +140,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
           let quartermaster: QuarterMaster = new QuarterMaster();
           quartermaster.spawnCreep(creepName, spawn);
         } else if (numLinkBearers < 1 && linkStructures.length > 0) {
-          let linkbearer: LinkBearer = new LinkBearer();
+          let linkbearer: LinkBearer = new LinkBearer(LinkNodes);
           linkbearer.spawnCreep(creepName, spawn);
         } else if (numGunners < 1 && turretStructures.length > 0) {
           let gunner: Gunner = new Gunner();
@@ -156,10 +171,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
     // Utilise tower manager
     let towerManager = new TowerManager();
     towerManager.update(spawn.room.name);
-
-
   }
+  console.log("PERFORMANCE: [spawn logic: " + (Game.cpu.getUsed() - spawnLogicCPU) + "]");
 
+  let creepLogicCPU: number = Game.cpu.getUsed();
   for (const creepName in Game.creeps) {
     let creep = Game.creeps[creepName];
 
@@ -204,7 +219,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
       quartermaster.update(creep);
     }
     if (creep.memory.role === "LINKBEARER") {
-      let linkbearer: LinkBearer = new LinkBearer();
+      let linkbearer: LinkBearer = new LinkBearer(LinkNodes);
       linkbearer.update(creep);
     }
     if (creep.memory.role === "HEALER") {
@@ -216,6 +231,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
       explorer.update(creep);
     }
   }
+  console.log("PERFORMANCE: [creep updates: " + (Game.cpu.getUsed() - creepLogicCPU) + "]");
+
+  let linkManager: LinkManager = new LinkManager();
+  linkManager.update(LinkNodes);
 
   // Code to run for each room
   // console.log("CPU: " + Game.cpu.limit);
