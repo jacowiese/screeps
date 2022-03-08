@@ -43,9 +43,7 @@ export class QuarterMaster extends BaseCreep {
             if (creep.store.getFreeCapacity() != 0) {
 
                 if (!this.getResourceFromFloor(creep)) {
-                    if (!this.getResourceFromContainer(creep)) {
-                        this.getResourceFromStorage(creep);
-                    }
+                    this.getResourceFromContainer(creep);
                 }
 
             } else {
