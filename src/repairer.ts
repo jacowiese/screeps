@@ -1,5 +1,6 @@
 import { BaseCreep } from "basecreep";
 import { random } from "lodash";
+import { WallRepairer } from "wallrepairer";
 
 export class Repairer extends BaseCreep {
 
@@ -42,26 +43,12 @@ export class Repairer extends BaseCreep {
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
-                let resourcePos: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { filter: (k: Resource) => {
-                    return (k.amount > 100);
-                }});
-                if (resourcePos != null) {
-                    if (creep.pickup(resourcePos) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(resourcePos.pos.x, resourcePos.pos.y);
-                    }
-                } else {
-
-                    let cntnr = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k: StructureContainer) => {
-                        return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
-                    }});
-
-                    // if there are containers with energy, go get it from them!
-                    if (cntnr != null) {
-                        if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(cntnr.pos.x, cntnr.pos.y);
-                        }
+                if (!this.getResourceFromFloor(creep)) {
+                    if (!this.getResourceFromContainer(creep)) {
+                        this.getResourceFromStorage(creep);
                     }
                 }
+
             } else {
                 creep.memory.state = "WORKING";
             }
@@ -75,16 +62,8 @@ export class Repairer extends BaseCreep {
                     }
                 } else {
 
-                    // if there are not buildings to repair... put the energy into a tower
-                    let towers = creep.room.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_TOWER }}) as Array<StructureTower>;
-                    towers.forEach( (t) => {
-                        if (t.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-
-                            if (creep.transfer(t, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(t.pos.x, t.pos.y);
-                            }
-                        }
-                    });
+                    let wallRepairer: WallRepairer = new WallRepairer();
+                    wallRepairer.update(creep);
 
                 }
             } else {

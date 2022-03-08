@@ -6,6 +6,74 @@ export abstract class BaseCreep {
 
     public update(creep: Creep): void {}
 
+    public getResourceFromFloor(creep: Creep) : boolean {
+        let resourcePos = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { filter: (r: Resource) => {
+            return (r.amount > 100 && r.resourceType === RESOURCE_ENERGY);
+        }});
+        if (resourcePos != null) {
+
+            creep.say("Floor!");
+            if (creep.pickup(resourcePos) === ERR_NOT_IN_RANGE) {
+                creep.moveTo(resourcePos.pos.x, resourcePos.pos.y);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public getResourceFromContainer(creep: Creep) : boolean {
+        let cntnr = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k: StructureContainer) => {
+            return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
+        }});
+
+        // if there are containers with energy, go get it from them!
+        if (cntnr != null) {
+
+            creep.say("Container!");
+            if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(cntnr.pos.x, cntnr.pos.y);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public getResourceFromStorage(creep: Creep) : boolean {
+        let storage:Array<StructureStorage> = creep.room.find(FIND_MY_STRUCTURES, { filter: (k: StructureStorage) => {
+            return (k.structureType === STRUCTURE_STORAGE && k.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
+        }}) as Array<StructureStorage>;
+        if (storage.length > 0) {
+
+            if (creep.withdraw(storage[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(storage[0].pos.x, storage[0].pos.y);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public getResourceFromLink(creep: Creep) : boolean {
+        let link = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k) => {
+            return (k.structureType === STRUCTURE_LINK && k.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
+        }});
+        if (link != undefined || link != null) {
+
+            if (creep.withdraw(link, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(link.pos.x, link.pos.y);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public closestConstructionSite(creep: Creep): ConstructionSite | null {
         let building : ConstructionSite | null = null;
         let distance : number = Number.MAX_VALUE;

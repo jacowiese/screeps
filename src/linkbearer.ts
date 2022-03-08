@@ -22,6 +22,11 @@ export class LinkBearer extends BaseCreep {
             return;
         }
 
+        // Maximum of 2 parts
+        if (numParts > 2) {
+            numParts = 2;
+        }
+
         for (let i: number = 0; i < numParts; i++) {
             body.push(MOVE);
             body.push(CARRY);
@@ -50,6 +55,7 @@ export class LinkBearer extends BaseCreep {
                 }});
                 if (resource != null) {
 
+                    console.log("Floor!");
                     if (creep.pickup(resource) == ERR_NOT_IN_RANGE) {
                         creep.moveTo(resource.pos.x, resource.pos.y);
                     }
@@ -62,6 +68,7 @@ export class LinkBearer extends BaseCreep {
 
                     // if there are containers with energy, go get it from them!
                     if (cntnr != null) {
+                        console.log("Container!");
                         if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                             creep.moveTo(cntnr.pos.x, cntnr.pos.y);
                         }
