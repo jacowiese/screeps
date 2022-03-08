@@ -70,6 +70,7 @@ export class LinkBearer extends BaseCreep {
 
             } else {
                 creep.memory.state = "WORKING";
+                creep.say("Working!");
             }
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
@@ -107,6 +108,7 @@ export class LinkBearer extends BaseCreep {
             } else {
                 creep.memory.state = "MINING";
                 creep.memory.target = "";
+                creep.say("Mining!");
             }
         }
     }
