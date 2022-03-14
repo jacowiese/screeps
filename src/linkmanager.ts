@@ -14,11 +14,20 @@ export class LinkManager {
                         node.source.forEach((srcId: string) => {
 
                             let srcLink: StructureLink | null = Game.getObjectById<StructureLink>(srcId);
-                            if (srcLink != null && srcLink.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
+                            if (srcLink != null && srcLink.cooldown == 0 && srcLink.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
 
-                                console.log("Link: transfer from " + srcId + " to " + node.target);
-                                if (srcLink.transferEnergy(targetLink as StructureLink) == ERR_FULL) {
+                                let energy: number = srcLink.store.energy;
+                                let result: ScreepsReturnCode = srcLink.transferEnergy(targetLink as StructureLink, targetLink?.store.getFreeCapacity(RESOURCE_ENERGY));
+                                console.log("LinkStructure transfer result: " + result);
+
+                                if (result == OK) {
+                                    console.log("Link: transfer from " + srcId + " to " + node.target + "Cost: " + energy * 0.003);
+                                } else if (result == ERR_FULL) {
                                     console.log("Link full: " + node.target);
+                                } else if (result == ERR_NOT_ENOUGH_RESOURCES) {
+                                    console.log("Link: Deposit some resources to transfer!");
+                                } else if (result == ERR_TIRED) {
+                                    console.log("Link: Link structure is tired!");
                                 }
                             }
                         });

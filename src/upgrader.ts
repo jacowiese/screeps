@@ -44,9 +44,9 @@ export class Upgrader extends BaseCreep {
 
 
                 if (!this.getResourceFromLink(creep)) {
-                    if (!this.getResourceFromFloor(creep)) {
-                        if (!this.getResourceFromContainer(creep)) {
-                            this.getResourceFromStorage(creep);
+                    if (!this.getResourceFromFloor(creep, RESOURCE_ENERGY)) {
+                        if (!this.getResourceFromContainer(creep, RESOURCE_ENERGY)) {
+                            this.getResourceFromStorage(creep, RESOURCE_ENERGY);
                         }
                     }
                 }

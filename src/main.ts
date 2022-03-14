@@ -14,6 +14,8 @@ import { LinkBearer } from "linkbearer";
 import { Healer } from "healer";
 import { Explorer } from "explorer";
 import { LinkManager } from "linkmanager";
+import { Extractor } from "extractor";
+import { Collector } from "collector";
 
 declare global {
   /*
@@ -40,6 +42,11 @@ declare global {
     flipflop?: number;
   }
 
+  interface RoomMemory {
+    sourceIds?: Array<string>;
+
+  }
+
   // Used for link structures
   interface LinkNode {
     target: string;
@@ -57,7 +64,7 @@ declare global {
 
 const LinkNodes: Array<LinkNode> = [
 
-  { target:"622666c4d1cdfb135e4ab1f6", source:["621397690f1d5e04031db3d1"] },
+  { target:"622666c4d1cdfb135e4ab1f6", source:["621397690f1d5e04031db3d1","622a69d2cf799d1bf73e138f"] },
 
 ];
 
@@ -91,6 +98,14 @@ export const loop = ErrorMapper.wrapLoop(() => {
     let numLinkBearers = _.sum(Game.creeps, (c) => c.memory.role == "LINKBEARER" && c.room.name === spawnRoom.name ? 1: 0);
     let numHealers = _.sum(Game.creeps, (c) => c.memory.role == "HEALER" && c.room.name === spawnRoom.name ? 1: 0);
     let numExplorers = _.sum(Game.creeps, (c) => c.memory.role == "EXPLORER" && c.room.name === spawnRoom.name ? 1: 0);
+    let numExtractors = _.sum(Game.creeps, (c) => c.memory.role == "EXTRACTOR" && c.room.name === spawnRoom.name ? 1: 0);
+    let numCollectors = _.sum(Game.creeps, (c) => c.memory.role == "COLLECTOR" && c.room.name === spawnRoom.name ? 1: 0);
+
+    let containerStructures = spawn.room.find(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
+      return (k.structureType === STRUCTURE_CONTAINER);
+    }});
+
+      let sources = spawn.room.find(FIND_SOURCES_ACTIVE);
 
       let storageStructures = spawn.room.find(FIND_STRUCTURES, { filter: (k: StructureStorage) => {
         return (k.structureType === STRUCTURE_STORAGE);
@@ -104,6 +119,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
         return (k.structureType === STRUCTURE_LINK);
       }}) as Array<StructureLink>;
 
+      let extractorStructure = spawn.room.find(FIND_STRUCTURES, { filter: (k) => {
+          return (k.structureType === STRUCTURE_EXTRACTOR);
+      }});
+
       // console.log("LinkStructures: " + linkStructures.length + " - " + spawnRoom.name);
 
       let creepName = spawn.name + "_" + Game.time;
@@ -114,20 +133,27 @@ export const loop = ErrorMapper.wrapLoop(() => {
       // console.log("Room: " + spawnRoom.name + " Energy: " + spawnRoom.energyAvailable + " / Capacity: " + spawnRoom.energyCapacityAvailable);
       // if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable && numMiners >= 1 && numHarvesters >= 1) {
 
+      let numMinersToSpawn = 0;
+      if (containerStructures == null || containerStructures == undefined || containerStructures.length == 0) {
+        numMinersToSpawn = sources.length;
+      } else {
+        numMinersToSpawn = containerStructures.length;
+      }
+
       if (numMiners >= 1 && numHarvesters >= 1) {
-        if (numMiners < 3) {
+        if (numMiners < numMinersToSpawn) {
           let miner: Miner = new Miner();
           miner.spawnCreep(creepName, spawn);
-        } else if (numHarvesters < 3) {
+        } else if (numHarvesters < 2) {
           let harvester: Harvester = new Harvester();
           harvester.spawnCreep(creepName, spawn);
-        } else if (numUpgraders < 1) {
+        } else if (numUpgraders < 2) {
           let upgrader: Upgrader = new Upgrader();
           upgrader.spawnCreep(creepName, spawn);
-        } else if (numBuilders < 3) {
+        } else if (numBuilders < 2) {
           let builder: Builder = new Builder();
           builder.spawnCreep(creepName, spawn);
-        } else if (numRepairers < 2) {
+        } else if (numRepairers < 1) {
           let repairer: Repairer = new Repairer();
           repairer.spawnCreep(creepName, spawn);
         } else if (numWallRepairers < 1) {
@@ -152,6 +178,13 @@ export const loop = ErrorMapper.wrapLoop(() => {
         } else if (numExplorers < 1) {
           let explorer: Explorer = new Explorer();
           explorer.spawnCreep(creepName, spawn);
+        } else if (numExtractors < 1 && extractorStructure != null) {
+          let extractor: Extractor = new Extractor();
+          extractor.spawnCreep(creepName, spawn);
+        }
+        else if (numCollectors < 1 && extractorStructure != null) {
+          let collector: Collector = new Collector();
+          collector.spawnCreep(creepName, spawn);
         }
      } else {
 
@@ -181,54 +214,62 @@ export const loop = ErrorMapper.wrapLoop(() => {
     if (creep.memory.role === "MINER") {
       let miner = new Miner();
       miner.update(creep);
-    }
+    } else
     if (creep.memory.role === "HARVESTER") {
       let harvester = new Harvester();
       harvester.update(creep);
-    }
+    } else
     if (creep.memory.role === "BUILDER") {
       let builder = new Builder();
       builder.update(creep);
-    }
+    } else
     if (creep.memory.role === "REPAIRER") {
       let repairer = new Repairer();
       repairer.update(creep);
-    }
+    } else
     if (creep.memory.role === "GUNNER") {
       let gunner = new Gunner();
       gunner.update(creep);
-    }
+    } else
     if (creep.memory.role === "UPGRADER") {
       let upgrader = new Upgrader();
       upgrader.update(creep);
-    }
+    } else
     if (creep.memory.role === "DEFENDER") {
       let defender = new Defender();
       defender.update(creep);
-    }
+    } else
     if (creep.memory.role === "RANGEDDEFENDER") {
       let rdefender = new RangedDefender();
       rdefender.update(creep);
-    }
+    } else
     if (creep.memory.role === "WALLREPAIRER") {
       let wallrepairer = new WallRepairer();
       wallrepairer.update(creep);
-    }
+    } else
     if (creep.memory.role === "QUARTERMASTER") {
       let quartermaster: QuarterMaster = new QuarterMaster();
       quartermaster.update(creep);
-    }
+    } else
     if (creep.memory.role === "LINKBEARER") {
       let linkbearer: LinkBearer = new LinkBearer(LinkNodes);
       linkbearer.update(creep);
-    }
+    } else
     if (creep.memory.role === "HEALER") {
       let healer: Healer = new Healer();
       healer.update(creep);
-    }
+    } else
     if (creep.memory.role === "EXPLORER") {
       let explorer: Explorer = new Explorer();
       explorer.update(creep);
+    }
+    if (creep.memory.role === "EXTRACTOR") {
+      let extractor: Extractor = new Extractor();
+      extractor.update(creep);
+    }
+    if (creep.memory.role === "COLLECTOR") {
+      let collector: Collector = new Collector();
+      collector.update(creep);
     }
   }
   console.log("PERFORMANCE: [creep updates: " + (Game.cpu.getUsed() - creepLogicCPU) + "]");

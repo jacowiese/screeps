@@ -50,29 +50,8 @@ export class LinkBearer extends BaseCreep {
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
-                let resource: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { filter: (k: Resource) => {
-                    return (k.resourceType === RESOURCE_ENERGY && k.amount > 100);
-                }});
-                if (resource != null) {
-
-                    console.log("Floor!");
-                    if (creep.pickup(resource) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(resource.pos.x, resource.pos.y);
-                    }
-
-                } else {
-
-                    let cntnr = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k: StructureContainer) => {
-                        return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
-                    }});
-
-                    // if there are containers with energy, go get it from them!
-                    if (cntnr != null) {
-                        console.log("Container!");
-                        if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(cntnr.pos.x, cntnr.pos.y);
-                        }
-                    }
+                if (!this.getResourceFromContainer(creep, RESOURCE_ENERGY)) {
+                    this.getResourceFromFloor(creep, RESOURCE_ENERGY);
                 }
 
             } else {
@@ -96,9 +75,12 @@ export class LinkBearer extends BaseCreep {
 
                             let tempSrcNode: StructureLink = Game.getObjectById<StructureLink>(id) as StructureLink;
                             let r: number = creep.pos.getRangeTo(tempSrcNode.pos);
+                            // console.log("Link: Range: " + range);
                             if (r < range) {
-                                closestNode = tempSrcNode;
-                                range = r;
+                                if (tempSrcNode.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                                    closestNode = tempSrcNode;
+                                    range = r;
+                                }
                             }
                         });
 

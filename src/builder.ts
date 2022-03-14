@@ -61,18 +61,19 @@ export class Builder extends BaseCreep {
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
-                if (!this.getResourceFromFloor(creep)) {
-                    if (!this.getResourceFromContainer(creep)) {
-                        if (!this.getResourceFromStorage(creep)) {
-
+                // if (!this.getResourceFromLink(creep)) {
+                    if (!this.getResourceFromStorage(creep, RESOURCE_ENERGY)) {
+                        if (!this.getResourceFromFloor(creep, RESOURCE_ENERGY)) {
+                            if (!this.getResourceFromContainer(creep, RESOURCE_ENERGY)) {
                                 // go directly to the source node
                                 let sourceNode = creep.pos.findClosestByPath(FIND_SOURCES) as Source;
                                 if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
                                     creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
                                 }
+                            }
                         }
                     }
-                }
+            //    }
             } else {
                 creep.memory.state = "WORKING";
             }

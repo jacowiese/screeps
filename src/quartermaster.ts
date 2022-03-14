@@ -42,9 +42,11 @@ export class QuarterMaster extends BaseCreep {
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
-                if (!this.getResourceFromFloor(creep)) {
-                    this.getResourceFromContainer(creep);
-                }
+                // if (!this.getResourceFromLink(creep)) {
+                    if (!this.getResourceFromFloor(creep, RESOURCE_ENERGY)) {
+                        this.getResourceFromContainer(creep, RESOURCE_ENERGY);
+                    }
+                // }
 
             } else {
                 creep.memory.state = "WORKING";

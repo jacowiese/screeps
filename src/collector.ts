@@ -1,7 +1,6 @@
 import { BaseCreep } from "basecreep";
-import { random } from "lodash";
 
-export class Gunner extends BaseCreep {
+export class Collector extends BaseCreep {
 
     public constructor() {
         super();
@@ -10,7 +9,7 @@ export class Gunner extends BaseCreep {
     public spawnCreep(creepName: string, spawn: StructureSpawn): void {
         super.spawnCreep(creepName, spawn);
 
-        let creepMemory: CreepMemory = {role: "GUNNER", state: "MINING", room: spawn.room.name };
+        let creepMemory: CreepMemory = {role: "COLLECTOR", state: "MINING", room: spawn.room.name };
 
         let body: Array<BodyPartConstant> = new Array<BodyPartConstant>();
 
@@ -25,13 +24,13 @@ export class Gunner extends BaseCreep {
             body.push(CARRY);
         }
 
-        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName + "_gunner", { memory: creepMemory });
+        let result: ScreepsReturnCode = spawn.spawnCreep(body, creepName + "_collector", { memory: creepMemory });
 
         console.log(creepMemory.role + " - " + result + " -> " + numParts + ":" + body);
 
         switch (result) {
             case ERR_NOT_ENOUGH_ENERGY: {
-                console.log('Could not spawn gunner: not enough energy!');
+                console.log('Could not spawn collector: not enough energy!');
             }
         }
     }
@@ -40,13 +39,9 @@ export class Gunner extends BaseCreep {
         super.update(creep);
 
         if (creep.memory.state == "MINING") {
-            if (creep.store.getFreeCapacity() > 0) {
+            if (creep.store.getFreeCapacity() != 0) {
 
-                if (!this.getResourceFromFloor(creep, RESOURCE_ENERGY)) {
-                    if (!this.getResourceFromStorage(creep, RESOURCE_ENERGY)) {
-                        this.getResourceFromContainer(creep, RESOURCE_ENERGY);
-                    }
-                }
+                    this.getResourceFromContainer(creep, RESOURCE_UTRIUM);
 
             } else {
                 creep.memory.state = "WORKING";
@@ -54,18 +49,16 @@ export class Gunner extends BaseCreep {
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 
-                let turrets: Array<StructureTower> = creep.room.find(FIND_MY_STRUCTURES) as Array<StructureTower>;
-                turrets.forEach((turret) => {
-
-                    if (turret.structureType === STRUCTURE_TOWER) {
-                        if (turret.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-
-                            if (creep.transfer(turret, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(turret.pos.x, turret.pos.y);
-                            }
-                        }
+                let storages = creep.room.find(FIND_MY_STRUCTURES, {filter: (structure) => {
+                    return (structure.structureType === STRUCTURE_STORAGE && structure.store.getFreeCapacity() != 0);
                     }
+                }) as Array<StructureStorage>;
 
+                storages.forEach((storage) => {
+
+                    if (creep.transfer(storage, RESOURCE_UTRIUM) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(storage.pos.x, storage.pos.y);
+                    }
                 });
 
             } else {

@@ -43,9 +43,9 @@ export class Repairer extends BaseCreep {
         if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
-                if (!this.getResourceFromFloor(creep)) {
-                    if (!this.getResourceFromContainer(creep)) {
-                        this.getResourceFromStorage(creep);
+                if (!this.getResourceFromFloor(creep, RESOURCE_ENERGY)) {
+                    if (!this.getResourceFromContainer(creep, RESOURCE_ENERGY)) {
+                        this.getResourceFromStorage(creep, RESOURCE_ENERGY);
                     }
                 }
 

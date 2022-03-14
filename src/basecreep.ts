@@ -6,9 +6,9 @@ export abstract class BaseCreep {
 
     public update(creep: Creep): void {}
 
-    public getResourceFromFloor(creep: Creep) : boolean {
-        let resourcePos = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { filter: (r: Resource) => {
-            return (r.amount > 100 && r.resourceType === RESOURCE_ENERGY);
+    public getResourceFromFloor<R extends ResourceConstant>(creep: Creep, resource: R) : boolean {
+        let resourcePos: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { filter: (r: Resource) => {
+            return (r.amount > 100 && r.resourceType === resource);
         }});
         if (resourcePos != null) {
 
@@ -23,17 +23,17 @@ export abstract class BaseCreep {
         return false;
     }
 
-    public getResourceFromContainer(creep: Creep) : boolean {
-        let cntnr = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (k: StructureContainer) => {
-            return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(RESOURCE_ENERGY) > 100);
-        }});
+    public getResourceFromContainer<R extends ResourceConstant>(creep: Creep, resource: R) : boolean {
+        let container: StructureContainer | null = creep.pos.findClosestByPath(FIND_STRUCTURES, { filter: (k: StructureContainer) => {
+            return (k.structureType === STRUCTURE_CONTAINER && k.store.getUsedCapacity(resource) > 100);
+        }}) as StructureContainer;
 
         // if there are containers with energy, go get it from them!
-        if (cntnr != null) {
+        if (container != null) {
 
             creep.say("Container!");
-            if (creep.withdraw(cntnr, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(cntnr.pos.x, cntnr.pos.y);
+            if (creep.withdraw(container, resource) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(container.pos.x, container.pos.y);
             }
 
             return true;
@@ -42,13 +42,13 @@ export abstract class BaseCreep {
         return false;
     }
 
-    public getResourceFromStorage(creep: Creep) : boolean {
+    public getResourceFromStorage<R extends ResourceConstant>(creep: Creep, resource: R) : boolean {
         let storage:Array<StructureStorage> = creep.room.find(FIND_MY_STRUCTURES, { filter: (k: StructureStorage) => {
-            return (k.structureType === STRUCTURE_STORAGE && k.store.getUsedCapacity(RESOURCE_ENERGY) > 0);
+            return (k.structureType === STRUCTURE_STORAGE && k.store.getUsedCapacity(resource) > 0);
         }}) as Array<StructureStorage>;
         if (storage.length > 0) {
 
-            if (creep.withdraw(storage[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            if (creep.withdraw(storage[0], resource) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(storage[0].pos.x, storage[0].pos.y);
             }
 
