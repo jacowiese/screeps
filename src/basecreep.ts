@@ -14,7 +14,7 @@ export abstract class BaseCreep {
 
             creep.say("Floor!");
             if (creep.pickup(resourcePos) === ERR_NOT_IN_RANGE) {
-                creep.moveTo(resourcePos.pos.x, resourcePos.pos.y);
+                creep.moveTo(resourcePos.pos.x, resourcePos.pos.y, { reusePath: 3 });
             }
 
             return true;
@@ -33,7 +33,7 @@ export abstract class BaseCreep {
 
             creep.say("Container!");
             if (creep.withdraw(container, resource) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(container.pos.x, container.pos.y);
+                creep.moveTo(container.pos.x, container.pos.y, { reusePath: 3 });
             }
 
             return true;
@@ -49,7 +49,7 @@ export abstract class BaseCreep {
         if (storage.length > 0) {
 
             if (creep.withdraw(storage[0], resource) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(storage[0].pos.x, storage[0].pos.y);
+                creep.moveTo(storage[0].pos.x, storage[0].pos.y, { reusePath: 3 });
             }
 
             return true;
@@ -65,7 +65,7 @@ export abstract class BaseCreep {
         if (link != undefined || link != null) {
 
             if (creep.withdraw(link, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(link.pos.x, link.pos.y);
+                creep.moveTo(link.pos.x, link.pos.y, { reusePath: 3 });
             }
 
             return true;
@@ -117,7 +117,7 @@ export abstract class BaseCreep {
     }
 
     public moveToRandomLocation(creep: Creep): void {
-        if (creep.moveTo(random(10, 40, false), random(10, 40, false)) == ERR_NO_PATH) {
+        if (creep.moveTo(random(10, 40, false), random(10, 40, false), { reusePath: 3 }) == ERR_NO_PATH) {
             // errrr, do nothing?
         }
     }

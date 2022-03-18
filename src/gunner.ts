@@ -19,6 +19,10 @@ export class Gunner extends BaseCreep {
             return;
         }
 
+        if (numParts > 2) {
+            numParts = 2;
+        }
+
         for (let i: number = 0; i < numParts; i++) {
             body.push(MOVE);
             body.push(CARRY);
@@ -61,7 +65,7 @@ export class Gunner extends BaseCreep {
                         if (turret.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
 
                             if (creep.transfer(turret, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(turret.pos.x, turret.pos.y);
+                                creep.moveTo(turret.pos.x, turret.pos.y, { reusePath: 3 });
                             }
                         }
                     }

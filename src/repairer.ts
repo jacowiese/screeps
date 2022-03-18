@@ -20,6 +20,10 @@ export class Repairer extends BaseCreep {
             return;
         }
 
+        if (numParts > 2) {
+            numParts = 2;
+        }
+
         for (let i: number = 0; i < numParts; i++) {
             body.push(MOVE);
             body.push(MOVE);
@@ -58,7 +62,7 @@ export class Repairer extends BaseCreep {
                 let brokenbuilding = this.structureWithLeastHitPoints(creep);
                 if (brokenbuilding != null) {
                     if (creep.repair(brokenbuilding) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(brokenbuilding.pos.x, brokenbuilding.pos.y);
+                        creep.moveTo(brokenbuilding.pos.x, brokenbuilding.pos.y, { reusePath: 3 });
                     }
                 } else {
 

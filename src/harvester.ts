@@ -1,4 +1,5 @@
 import { BaseCreep } from "basecreep";
+import { spawn } from "child_process";
 import { random } from "lodash";
 import { QuarterMaster } from "quartermaster";
 
@@ -66,7 +67,9 @@ export class Harvester extends BaseCreep {
                 if (ext != null) {
                     // If there is room in an extension, fill it first!
                     if (creep.transfer(ext, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(ext.pos.x, ext.pos.y);
+                        creep.moveTo(ext.pos.x, ext.pos.y,{
+                            reusePath: 3
+                        });
                     }
                 } else {
 
@@ -81,7 +84,7 @@ export class Harvester extends BaseCreep {
                         // Put energy into spawn for new creeps!
 
                         if (creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(spawn.pos.x, spawn.pos.y);
+                            creep.moveTo(spawn.pos.x, spawn.pos.y, { reusePath: 3 });
                         }
 
                     } else {

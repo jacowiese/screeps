@@ -62,7 +62,7 @@ export class QuarterMaster extends BaseCreep {
                 storages.forEach((storage) => {
 
                     if (creep.transfer(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(storage.pos.x, storage.pos.y);
+                        creep.moveTo(storage.pos.x, storage.pos.y, { reusePath: 3 });
                     }
                 });
 

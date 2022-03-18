@@ -19,6 +19,10 @@ export class Miner extends BaseCreep {
             return;
         }
 
+        if (numParts > 3) {
+            numParts = 3;
+        }
+
         for (let i: number = 0; i < numParts; i++) {
             body.push(MOVE);
             body.push(WORK);
@@ -47,7 +51,7 @@ export class Miner extends BaseCreep {
             let sourceNode = Game.getObjectById(creep.memory.target as string) as Source;
             let result = creep.harvest(sourceNode);
             if (result === ERR_NOT_IN_RANGE) {
-                creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                creep.moveTo(sourceNode.pos.x, sourceNode.pos.y, { reusePath: 3 });
                 // console.log(creep.name + " - " + creep.memory.flipflop);
                 if (creep.memory.flipflop != undefined) {
                     creep.memory.flipflop = creep.memory.flipflop + 1;

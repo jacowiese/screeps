@@ -20,6 +20,10 @@ export class Healer extends BaseCreep {
             return;
         }
 
+        if (numParts > 2) {
+            numParts = 2;
+        }
+
         for (let i: number = 0; i < numParts; i++) {
             body.push(MOVE);
             body.push(MOVE);

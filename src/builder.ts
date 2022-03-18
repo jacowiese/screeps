@@ -20,6 +20,10 @@ export class Builder extends BaseCreep {
             return;
         }
 
+        if (numParts > 2) {
+            numParts = 2;
+        }
+
         for (let i: number = 0; i < numParts; i++) {
             body.push(MOVE);
             body.push(MOVE);
@@ -53,7 +57,7 @@ export class Builder extends BaseCreep {
             if (creep.pos.roomName !== flag.pos.roomName) {
 
                 console.log("Builder moving to room: " + flag.pos.roomName);
-                creep.moveTo(flag);
+                creep.moveTo(flag, { reusePath: 3 });
                 return;
             }
         }
@@ -68,7 +72,7 @@ export class Builder extends BaseCreep {
                                 // go directly to the source node
                                 let sourceNode = creep.pos.findClosestByPath(FIND_SOURCES) as Source;
                                 if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
-                                    creep.moveTo(sourceNode.pos.x, sourceNode.pos.y);
+                                    creep.moveTo(sourceNode.pos.x, sourceNode.pos.y, { reusePath: 3 });
                                 }
                             }
                         }
@@ -87,7 +91,7 @@ export class Builder extends BaseCreep {
                 if (building != null) {
                     // If construction site is not finished, go and build it!
                     if (creep.build(building) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(building.pos.x, building.pos.y);
+                        creep.moveTo(building.pos.x, building.pos.y, { reusePath: 3 });
                     }
                 } else {
 

@@ -50,7 +50,7 @@ export class Extractor extends BaseCreep {
 
                 if (creep.harvest(deposit) === ERR_NOT_IN_RANGE) {
 
-                    creep.moveTo(deposit);
+                    creep.moveTo(deposit, { reusePath: 3 });
                 }
             }
         // }

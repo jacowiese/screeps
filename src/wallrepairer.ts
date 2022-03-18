@@ -18,6 +18,10 @@ export class WallRepairer extends BaseCreep {
             return;
         }
 
+        if (numParts > 2) {
+            numParts = 2;
+        }
+
         for (let i: number = 0; i < numParts; i++) {
             body.push(MOVE);
             body.push(MOVE);
@@ -47,19 +51,26 @@ export class WallRepairer extends BaseCreep {
             } else {
                 creep.memory.state = "WORKING";
                 creep.say("Working!");
-            }
-        } else if (creep.memory.state == "WORKING") {
-            if (creep.store.getUsedCapacity() > 0) {
 
                 let structures: Array<Structure> = creep.room.find(FIND_STRUCTURES, { filter: (k) => {
                     return (k.hits < k.hitsMax);
                 }}) as Array<Structure>;
 
                 structures.sort((a: Structure, b: Structure) => a.hits - b.hits);
-
                 if (structures.length > 0) {
-                    if (creep.repair(structures[0]) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(structures[0].pos.x, structures[0].pos.y);
+                    creep.memory.target = structures[0].id;
+                }
+            }
+        } else if (creep.memory.state == "WORKING") {
+            if (creep.store.getUsedCapacity() > 0) {
+
+                if (creep.memory.target != null || creep.memory.target != undefined) {
+                    let targetStructure: AnyStructure | null = Game.getObjectById(creep.memory.target);
+
+                    if (targetStructure != null) {
+                        if (creep.repair(targetStructure) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(targetStructure.pos.x, targetStructure.pos.y, { reusePath: 3 });
+                        }
                     }
                 }
             } else {

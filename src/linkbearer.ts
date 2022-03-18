@@ -48,7 +48,7 @@ export class LinkBearer extends BaseCreep {
         super.update(creep);
 
         if (creep.memory.state == "MINING") {
-            if (creep.store.getFreeCapacity() != 0) {
+            if (creep.store.getFreeCapacity() > 0) {
 
                 if (!this.getResourceFromContainer(creep, RESOURCE_ENERGY)) {
                     this.getResourceFromFloor(creep, RESOURCE_ENERGY);
@@ -87,7 +87,7 @@ export class LinkBearer extends BaseCreep {
                         if (closestNode != null) {
                             console.log("Linkbearer going to: " + closestNode);
                             if (creep.transfer(closestNode, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(closestNode);
+                                creep.moveTo(closestNode, { reusePath: 3 });
                             }
                         }
 

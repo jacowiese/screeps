@@ -19,6 +19,10 @@ export class Upgrader extends BaseCreep {
             return;
         }
 
+        if (numParts > 3) {
+            numParts = 3;
+        }
+
         for (let i: number = 0; i < numParts; i++) {
             body.push(MOVE);
             body.push(MOVE);
@@ -65,7 +69,7 @@ export class Upgrader extends BaseCreep {
                 }
 
                 if (creep.upgradeController(controller) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(controller.pos.x, controller.pos.y);
+                    creep.moveTo(controller.pos.x, controller.pos.y, { reusePath: 3 });
                 }
             } else {
                 creep.memory.state = "MINING";

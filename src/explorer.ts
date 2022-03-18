@@ -55,13 +55,13 @@ export class Explorer extends BaseCreep{
                     // If there is a controller in the claim flag room, try to claim it!
                     if (creep.claimController(targetRoom.controller) === ERR_NOT_IN_RANGE) {
 
-                        creep.moveTo(targetRoom.controller.pos.x, targetRoom.controller.pos.y);
+                        creep.moveTo(targetRoom.controller.pos.x, targetRoom.controller.pos.y, { reusePath: 3 });
                     }
                 }
             } else {
 
                 // If the creep is not in the claim flag room, go to it first!
-                creep.moveTo(flag);
+                creep.moveTo(flag, { reusePath: 3 });
 
             }
         }
