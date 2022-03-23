@@ -55,17 +55,37 @@ export class Repairer extends BaseCreep {
 
             } else {
                 creep.memory.state = "WORKING";
+                creep.memory.target = "";
+
+                let brkbuildings = creep.room.find(FIND_STRUCTURES, { filter: (k) => {
+                    return k.hits < k.hitsMax && k.structureType !== STRUCTURE_WALL && k.structureType !== STRUCTURE_RAMPART;
+                }});
+
+                brkbuildings.sort((a: AnyStructure, b: AnyStructure) => (a.hits - b.hits));
+
+                if (brkbuildings.length > 0) {
+                    creep.memory.target = brkbuildings[0].id;
+                }
             }
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 
-                let brokenbuilding = this.structureWithLeastHitPoints(creep);
-                if (brokenbuilding != null) {
-                    if (creep.repair(brokenbuilding) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(brokenbuilding.pos.x, brokenbuilding.pos.y, { reusePath: 3 });
+                if (creep.memory.target != null || creep.memory.target != "") {
+                    let targetStructure: AnyStructure | null = Game.getObjectById<AnyStructure>(creep.memory.target as string);
+
+                    if (targetStructure != null) {
+                        let result = creep.repair(targetStructure);
+                        if (result == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(targetStructure.pos.x, targetStructure.pos.y, { reusePath: 3 });
+                        }
+                        if (result == ERR_INVALID_TARGET) {
+                            creep.memory.target = "";
+                        }
                     }
+
                 } else {
 
+                    creep.memory.target = "";
                     let wallRepairer: WallRepairer = new WallRepairer();
                     wallRepairer.update(creep);
 

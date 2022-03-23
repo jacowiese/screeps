@@ -1,3 +1,4 @@
+import { random } from "lodash";
 
 
 export class TowerManager {
@@ -24,11 +25,15 @@ export class TowerManager {
 
         // defend!
         let hostiles = room.find(FIND_HOSTILE_CREEPS) as Array<Creep>;
-        hostiles.sort((a: Creep, b: Creep) => a.hits - b.hits);
+        // hostiles.sort((a: Creep, b: Creep) => {
+        //     if (a.body.includes("HEAL")) {
+        //         return -1;
+        //     }
+        // });
         if (hostiles.length > 0) {
 
             console.log("Tower attacking a creep!");
-            towers.forEach((t) => t.attack(hostiles[0]));
+            towers.forEach((t) => t.attack(hostiles[_.random(0, hostiles.length)]));
 
         } else {
 

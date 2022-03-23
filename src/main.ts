@@ -43,7 +43,7 @@ declare global {
   }
 
   interface RoomMemory {
-    sourceIds?: Array<string>;
+    miners: Array<string>;
 
   }
 
@@ -80,6 +80,11 @@ export const loop = ErrorMapper.wrapLoop(() => {
       delete Memory.creeps[name];
     }
   }
+
+  // // Clear rooms memory
+  // for (const name in Memory.rooms) {
+  //   delete Memory.rooms[name];
+  // }
 
   let claimFlag: Flag = Game.flags['claim'];
   for (const fname in Game.flags) {
@@ -144,15 +149,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
       // console.log("Room: " + spawnRoom.name + " Energy: " + spawnRoom.energyAvailable + " / Capacity: " + spawnRoom.energyCapacityAvailable);
       // if (spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable && numMiners >= 1 && numHarvesters >= 1) {
 
-      let numMinersToSpawn = 0;
-      if (containerStructures == null || containerStructures == undefined || containerStructures.length == 0) {
-        numMinersToSpawn = sources.length;
-      } else {
-        numMinersToSpawn = containerStructures.length;
-      }
+      let maxMiners = sources.length * 2;
 
       if (numMiners >= 1 && numHarvesters >= 1) {
-        if (numMiners < numMinersToSpawn) {
+        if (numMiners < maxMiners) {
           let miner: Miner = new Miner();
           miner.spawnCreep(creepName, spawn);
         }
@@ -164,11 +164,11 @@ export const loop = ErrorMapper.wrapLoop(() => {
           let upgrader: Upgrader = new Upgrader();
           upgrader.spawnCreep(creepName, spawn);
         }
-        if (numBuilders < 1) {
+        if (numBuilders < 3) {
           let builder: Builder = new Builder();
           builder.spawnCreep(creepName, spawn);
         }
-        if (numRepairers < 1) {
+        if (numRepairers < 0) {
           let repairer: Repairer = new Repairer();
           repairer.spawnCreep(creepName, spawn);
         }

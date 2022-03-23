@@ -1,6 +1,7 @@
 import { BaseCreep } from "basecreep";
 import { Harvester } from "harvester";
 import { random } from "lodash";
+import { Repairer } from "repairer";
 
 export class Builder extends BaseCreep {
 
@@ -91,13 +92,16 @@ export class Builder extends BaseCreep {
                 if (building != null) {
                     // If construction site is not finished, go and build it!
                     if (creep.build(building) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(building.pos.x, building.pos.y, { reusePath: 3 });
+                        creep.moveTo(building.pos.x, building.pos.y, { reusePath: 1 });
                     }
                 } else {
 
                     // if there are no buildings to build, do the harvester role!
-                    let harvester:Harvester = new Harvester();
-                    harvester.update(creep);
+                    // let harvester:Harvester = new Harvester();
+                    // harvester.update(creep);
+
+                    let repairer:Repairer = new Repairer();
+                    repairer.update(creep);
 
                 }
             } else {

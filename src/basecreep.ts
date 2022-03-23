@@ -8,7 +8,7 @@ export abstract class BaseCreep {
 
     public getResourceFromFloor<R extends ResourceConstant>(creep: Creep, resource: R) : boolean {
         let resourcePos: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { filter: (r: Resource) => {
-            return (r.amount > 100 && r.resourceType === resource);
+            return (r.amount > 0 && r.resourceType === resource);
         }});
         if (resourcePos != null) {
 

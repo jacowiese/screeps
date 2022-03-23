@@ -43,28 +43,56 @@ export class Miner extends BaseCreep {
     public update(creep: Creep): void {
         super.update(creep);
 
+        // if (creep.memory.target == null || creep.memory.target == "") {
+
+        //     let sources: Array<Source> = creep.room.find(FIND_SOURCES_ACTIVE);
+
+        //     if (!creep.room.memory.minerMap.has(creep.id)) {
+
+        //         creep.room.memory.minerMap.set(creep.id, sources[0].id);
+        //     }
+        // }
+
+
+        /* Old code */
+
         if (creep.memory.target == null || creep.memory.target == "") {
-            this.selectSource(creep);
-        }
 
-        if (creep.memory.target != undefined || creep.memory.target != "") {
-            let sourceNode = Game.getObjectById(creep.memory.target as string) as Source;
-            let result = creep.harvest(sourceNode);
-            if (result === ERR_NOT_IN_RANGE) {
-                creep.moveTo(sourceNode.pos.x, sourceNode.pos.y, { reusePath: 3 });
-                // console.log(creep.name + " - " + creep.memory.flipflop);
-                if (creep.memory.flipflop != undefined) {
-                    creep.memory.flipflop = creep.memory.flipflop + 1;
-                    // 5 retries, and then it tries another source
-                    if (creep.memory.flipflop > 10 && this.countRoles("MINER") > 1) {
-                        this.selectSource(creep);
-                    }
+            let sourceNodes = creep.room.find(FIND_SOURCES_ACTIVE);
+            let sourceNode = sourceNodes[random(0, sourceNodes.length-1)];
+
+            creep.memory.target = sourceNode.id;
+
+
+            // this.selectSource(creep);
+        } else {
+
+            let sourceNode: Source | null = Game.getObjectById(creep.memory.target);
+            if (sourceNode != null) {
+                if (creep.harvest(sourceNode) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(sourceNode.pos.x, sourceNode.pos.y, { reusePath: 3 });
                 }
-            } else if (result === ERR_NOT_ENOUGH_RESOURCES) {
-
-                this.selectSource(creep);
             }
         }
+
+        // if (creep.memory.target != undefined || creep.memory.target != "") {
+        //     let sourceNode = Game.getObjectById(creep.memory.target as string) as Source;
+        //     let result = creep.harvest(sourceNode);
+        //     if (result === ERR_NOT_IN_RANGE) {
+        //         creep.moveTo(sourceNode.pos.x, sourceNode.pos.y, { reusePath: 3 });
+        //         // console.log(creep.name + " - " + creep.memory.flipflop);
+        //         if (creep.memory.flipflop != undefined) {
+        //             creep.memory.flipflop = creep.memory.flipflop + 1;
+        //             // 5 retries, and then it tries another source
+        //             if (creep.memory.flipflop > 10 && this.countRoles("MINER") > 1) {
+        //                 this.selectSource(creep);
+        //             }
+        //         }
+        //     } else if (result === ERR_NOT_ENOUGH_RESOURCES) {
+
+        //         this.selectSource(creep);
+        //     }
+        // }
     }
 
     private selectSource(creep: Creep): void {
