@@ -43,7 +43,19 @@ export class Upgrader extends BaseCreep {
 
     public update(creep: Creep): void {
 
-        if (creep.memory.state == "MINING") {
+        super.update(creep);
+
+        if ((creep.ticksToLive || 1500) < 150 && creep.body.length > 10) {
+            console.log(creep.name + " going to recharge.");
+            creep.memory.state = "RECHARGE";
+        }
+
+
+        if (creep.memory.state == "RECHARGE") {
+
+            this.doRefreshCreep(creep);
+
+        } else if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
 

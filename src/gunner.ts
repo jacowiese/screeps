@@ -43,12 +43,26 @@ export class Gunner extends BaseCreep {
     public update(creep: Creep): void {
         super.update(creep);
 
-        if (creep.memory.state == "MINING") {
+        console.log(creep.body.length);
+
+        if ((creep.ticksToLive || 1500) < 150 && creep.body.length > 10) {
+            console.log(creep.name + " going to recharge.");
+            creep.memory.state = "RECHARGE";
+        }
+
+
+        if (creep.memory.state == "RECHARGE") {
+
+            this.doRefreshCreep(creep);
+
+        } else if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() > 0) {
 
-                if (!this.getResourceFromFloor(creep, RESOURCE_ENERGY)) {
-                    if (!this.getResourceFromStorage(creep, RESOURCE_ENERGY)) {
-                        this.getResourceFromContainer(creep, RESOURCE_ENERGY);
+                if (!this.getResourceFromStorage(creep, RESOURCE_ENERGY)) {
+                    if (!this.getResourceFromLink(creep)) {
+                        if (!this.getResourceFromFloor(creep, RESOURCE_ENERGY)) {
+                            this.getResourceFromContainer(creep, RESOURCE_ENERGY);
+                        }
                     }
                 }
 
@@ -58,19 +72,26 @@ export class Gunner extends BaseCreep {
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 
-                let turrets: Array<StructureTower> = creep.room.find(FIND_MY_STRUCTURES) as Array<StructureTower>;
-                turrets.forEach((turret) => {
+                let turrets: Array<StructureTower> = creep.room.find(FIND_MY_STRUCTURES, {filter: (k) => {
+                    return (k.structureType === STRUCTURE_TOWER);
+                }}) as Array<StructureTower>;
 
-                    if (turret.structureType === STRUCTURE_TOWER) {
-                        if (turret.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                // turrets.forEach((turret) => {
 
-                            if (creep.transfer(turret, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(turret.pos.x, turret.pos.y, { reusePath: 3 });
+                if (turrets.length > 0) {
+
+                    turrets.sort((a: StructureTower, b: StructureTower) => (a.store.getUsedCapacity(RESOURCE_ENERGY) - b.store.getUsedCapacity(RESOURCE_ENERGY)));
+
+                    if (turrets[0].structureType === STRUCTURE_TOWER) {
+                        if (turrets[0].store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+
+                            if (creep.transfer(turrets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                creep.moveTo(turrets[0].pos.x, turrets[0].pos.y, { reusePath: 1 });
                             }
                         }
                     }
-
-                });
+                }
+                // });
 
             } else {
                 creep.memory.state = "MINING";

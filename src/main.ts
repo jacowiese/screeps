@@ -121,7 +121,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
       let sources = spawn.room.find(FIND_SOURCES_ACTIVE);
 
-      let storageStructures = spawn.room.find(FIND_STRUCTURES, { filter: (k: StructureStorage) => {
+      let storageStructures: Array<StructureStorage> = spawn.room.find(FIND_STRUCTURES, { filter: (k: StructureStorage) => {
         return (k.structureType === STRUCTURE_STORAGE);
       }});
 
@@ -151,7 +151,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
       let maxMiners = sources.length * 2;
 
-      if (numMiners >= 1 && numHarvesters >= 1) {
+      if (numMiners >= maxMiners && numHarvesters >= 1) { // && spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) {
+
         if (numMiners < maxMiners) {
           let miner: Miner = new Miner();
           miner.spawnCreep(creepName, spawn);
@@ -160,60 +161,62 @@ export const loop = ErrorMapper.wrapLoop(() => {
           let harvester: Harvester = new Harvester();
           harvester.spawnCreep(creepName, spawn);
         }
-        if (numUpgraders < 3) {
-          let upgrader: Upgrader = new Upgrader();
-          upgrader.spawnCreep(creepName, spawn);
-        }
-        if (numBuilders < 3) {
-          let builder: Builder = new Builder();
-          builder.spawnCreep(creepName, spawn);
-        }
-        if (numRepairers < 0) {
-          let repairer: Repairer = new Repairer();
-          repairer.spawnCreep(creepName, spawn);
-        }
-        if (numWallRepairers < 1) {
-          let wallrepairer: WallRepairer = new WallRepairer();
-          wallrepairer.spawnCreep(creepName, spawn);
-        }
-        if (numHealers < 1) {
-          let healer: Healer = new Healer();
-          healer.spawnCreep(creepName, spawn);
-        }
-        if (numQuartermasters < 2 && storageStructures.length > 0) {
+        if (numQuartermasters < 1 && storageStructures.length > 0) {
           let quartermaster: QuarterMaster = new QuarterMaster();
           quartermaster.spawnCreep(creepName, spawn);
         }
-        if (numLinkBearers < 1 && linkStructures.length > 0) {
-          let linkbearer: LinkBearer = new LinkBearer(LinkNodes);
-          linkbearer.spawnCreep(creepName, spawn);
+        if (numUpgraders < 1) {
+          let upgrader: Upgrader = new Upgrader();
+          upgrader.spawnCreep(creepName, spawn);
         }
         if (numGunners < 1 && turretStructures.length > 0) {
           let gunner: Gunner = new Gunner();
           gunner.spawnCreep(creepName, spawn);
         }
-        if (numDefenders < 1) {
-          spawn.spawnCreep([ MOVE, MOVE, TOUGH, ATTACK ], creepName, { memory: {role: "DEFENDER", room: spawn.room.name }} as SpawnOptions);
-        }
-        if (numRangedDefenders < 1) {
-          spawn.spawnCreep([ MOVE, MOVE, TOUGH, RANGED_ATTACK ], creepName, { memory: {role: "RANGEDDEFENDER", room: spawn.room.name }} as SpawnOptions);
-        }
-        if (numExplorers < 1 && claimFlag != undefined) {
-          let explorer: Explorer = new Explorer();
-          explorer.spawnCreep(creepName, spawn);
-        }
-        if (numExtractors < 1 && extractorStructure.length > 0 && mineralDeposit.mineralAmount > 0) {
-          let extractor: Extractor = new Extractor();
-          extractor.spawnCreep(creepName, spawn);
-        }
-        if (numCollectors < 1 && extractorStructure.length > 0 && mineralDeposit.mineralAmount > 0) {
-          let collector: Collector = new Collector();
-          collector.spawnCreep(creepName, spawn);
-        }
+   //   if (storageStructures[0].store.getUsedCapacity(RESOURCE_ENERGY) > 10000) {
+          if (numBuilders < 1) {
+            let builder: Builder = new Builder();
+            builder.spawnCreep(creepName, spawn);
+          }
+          if (numRepairers < 1) {
+            let repairer: Repairer = new Repairer();
+            repairer.spawnCreep(creepName, spawn);
+          }
+          if (numWallRepairers < 1) {
+            let wallrepairer: WallRepairer = new WallRepairer();
+            wallrepairer.spawnCreep(creepName, spawn);
+          }
+          // if (numHealers < 1) {
+          //   let healer: Healer = new Healer();
+          //   healer.spawnCreep(creepName, spawn);
+          // }
+          // if (numLinkBearers < 1 && linkStructures.length > 0) {
+          //   let linkbearer: LinkBearer = new LinkBearer(LinkNodes);
+          //   linkbearer.spawnCreep(creepName, spawn);
+          // }
+          // if (numDefenders < 1) {
+          //   spawn.spawnCreep([ MOVE, MOVE, TOUGH, ATTACK ], creepName, { memory: {role: "DEFENDER", room: spawn.room.name }} as SpawnOptions);
+          // }
+          // if (numRangedDefenders < 1) {
+          //   spawn.spawnCreep([ MOVE, MOVE, TOUGH, RANGED_ATTACK ], creepName, { memory: {role: "RANGEDDEFENDER", room: spawn.room.name }} as SpawnOptions);
+          // }
+          if (numExplorers < 1 && claimFlag != undefined) {
+            let explorer: Explorer = new Explorer();
+            explorer.spawnCreep(creepName, spawn);
+          }
+          if (numExtractors < 1 && extractorStructure.length > 0 && mineralDeposit.mineralAmount > 0) {
+            let extractor: Extractor = new Extractor();
+            extractor.spawnCreep(creepName, spawn);
+          }
+          if (numCollectors < 1 && extractorStructure.length > 0 && mineralDeposit.mineralAmount > 0) {
+            let collector: Collector = new Collector();
+            collector.spawnCreep(creepName, spawn);
+          }
+     //   }
      } else {
 
       // We cannot work without miners!
-      if (numMiners < 1) {
+      if (numMiners < maxMiners) {
         let miner: Miner = new Miner();
         miner.spawnCreep(creepName, spawn);
       }
@@ -286,11 +289,11 @@ export const loop = ErrorMapper.wrapLoop(() => {
     if (creep.memory.role === "EXPLORER") {
       let explorer: Explorer = new Explorer();
       explorer.update(creep);
-    }
+    } else
     if (creep.memory.role === "EXTRACTOR") {
       let extractor: Extractor = new Extractor();
       extractor.update(creep);
-    }
+    } else
     if (creep.memory.role === "COLLECTOR") {
       let collector: Collector = new Collector();
       collector.update(creep);

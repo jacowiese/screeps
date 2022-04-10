@@ -4,7 +4,8 @@ export abstract class BaseCreep {
 
     public spawnCreep(creepName: string, spawn: StructureSpawn): void {}
 
-    public update(creep: Creep): void {}
+    public update(creep: Creep): void {
+    }
 
     public getResourceFromFloor<R extends ResourceConstant>(creep: Creep, resource: R) : boolean {
         let resourcePos: Resource | null = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { filter: (r: Resource) => {
@@ -109,6 +110,27 @@ export abstract class BaseCreep {
         }
 
         return building;
+    }
+
+    public doRefreshCreep(creep:Creep): void {
+        let spawn: StructureSpawn = creep.room.find(FIND_MY_SPAWNS, { filter: (k: StructureSpawn) => {
+            return (k.room.energyAvailable > 50);
+        }})[0];
+
+        if (spawn != undefined) {
+
+            if (spawn.spawning != null)
+                return;
+
+            let result = spawn.renewCreep(creep);
+            if (result == ERR_NOT_IN_RANGE) {
+                creep.moveTo(spawn);
+            } else if (result == ERR_FULL) {
+
+                creep.memory.state = "MINING";
+                console.log("Creep " + creep.name + " refreshed!");
+            }
+        }
     }
 
     public dist(a: RoomPosition, b: RoomPosition): number {

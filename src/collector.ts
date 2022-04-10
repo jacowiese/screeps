@@ -38,7 +38,16 @@ export class Collector extends BaseCreep {
     public update(creep: Creep): void {
         super.update(creep);
 
-        if (creep.memory.state == "MINING") {
+        if ((creep.ticksToLive || 1500) < 150 && creep.body.length > 10) {
+            console.log(creep.name + " going to recharge.");
+            creep.memory.state = "RECHARGE";
+        }
+
+        if (creep.memory.state == "RECHARGE") {
+
+            this.doRefreshCreep(creep);
+
+        } else if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
                     this.getResourceFromContainer(creep, RESOURCE_UTRIUM);
@@ -49,18 +58,27 @@ export class Collector extends BaseCreep {
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 
-                let storages = creep.room.find(FIND_MY_STRUCTURES, {filter: (structure) => {
-                    return (structure.structureType === STRUCTURE_STORAGE && structure.store.getFreeCapacity() != 0);
+
+                if (creep.room.terminal != null) {
+
+                    if (creep.transfer(creep.room.terminal, RESOURCE_UTRIUM) === ERR_NOT_IN_RANGE) {
+                        creep.moveTo(creep.room.terminal, { reusePath: 3});
                     }
-                }) as Array<StructureStorage>;
 
-                storages.forEach((storage) => {
+                } else {
 
-                    if (creep.transfer(storage, RESOURCE_UTRIUM) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(storage.pos.x, storage.pos.y, { reusePath: 3 });
-                    }
-                });
+                    let storages = creep.room.find(FIND_MY_STRUCTURES, {filter: (structure) => {
+                        return (structure.structureType === STRUCTURE_STORAGE && structure.store.getFreeCapacity() != 0);
+                        }
+                    }) as Array<StructureStorage>;
 
+                    storages.forEach((storage) => {
+
+                        if (creep.transfer(storage, RESOURCE_UTRIUM) == ERR_NOT_IN_RANGE) {
+                            creep.moveTo(storage.pos.x, storage.pos.y, { reusePath: 3 });
+                        }
+                    });
+                }
             } else {
                 creep.memory.state = "MINING";
                 creep.memory.target = "";

@@ -39,7 +39,16 @@ export class QuarterMaster extends BaseCreep {
     public update(creep: Creep): void {
         super.update(creep);
 
-        if (creep.memory.state == "MINING") {
+        if ((creep.ticksToLive || 1500) < 150 && creep.body.length > 10) {
+            console.log(creep.name + " going to recharge.");
+            creep.memory.state = "RECHARGE";
+        }
+
+        if (creep.memory.state == "RECHARGE") {
+
+            this.doRefreshCreep(creep);
+
+        } else if (creep.memory.state == "MINING") {
             if (creep.store.getFreeCapacity() != 0) {
 
                 // if (!this.getResourceFromLink(creep)) {
@@ -51,6 +60,7 @@ export class QuarterMaster extends BaseCreep {
             } else {
                 creep.memory.state = "WORKING";
             }
+
         } else if (creep.memory.state == "WORKING") {
             if (creep.store.getUsedCapacity() > 0) {
 

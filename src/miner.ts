@@ -14,18 +14,17 @@ export class Miner extends BaseCreep {
 
         let body: Array<BodyPartConstant> = new Array<BodyPartConstant>();
 
-        let numParts = Math.floor(spawn.room.energyAvailable / 250);
+        let numParts = Math.floor((spawn.room.energyAvailable - 50) / 100);
         if (numParts == 0) {
             return;
         }
 
-        if (numParts > 3) {
-            numParts = 3;
+        if (numParts > 5) {
+            numParts = 5;
         }
 
+        body.push(MOVE);
         for (let i: number = 0; i < numParts; i++) {
-            body.push(MOVE);
-            body.push(WORK);
             body.push(WORK);
         }
 
@@ -58,13 +57,14 @@ export class Miner extends BaseCreep {
 
         if (creep.memory.target == null || creep.memory.target == "") {
 
-            let sourceNodes = creep.room.find(FIND_SOURCES_ACTIVE);
-            let sourceNode = sourceNodes[random(0, sourceNodes.length-1)];
+            // let numMiners = _.sum(Game.creeps, (c) => c.memory.role == "MINER" && c.room.name === creep.room.name ? 1 : 0) + 1;
 
-            creep.memory.target = sourceNode.id;
+            // let sourceNodes = creep.room.find(FIND_SOURCES_ACTIVE);
+            // let sourceNode = sourceNodes[numMiners % 2 == 0 ? 0 : 1];
 
+            // creep.memory.target = sourceNode.id;
 
-            // this.selectSource(creep);
+            this.selectSource(creep);
         } else {
 
             let sourceNode: Source | null = Game.getObjectById(creep.memory.target);

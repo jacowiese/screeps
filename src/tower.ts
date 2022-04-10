@@ -48,7 +48,7 @@ export class TowerManager {
 
             if (structures.length > 0 && repaired == false) {
                 structures.forEach((s) => {
-                    if (s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART && s.structureType !== STRUCTURE_ROAD) {
+                    if (s.structureType !== STRUCTURE_WALL && s.structureType !== STRUCTURE_RAMPART) {
                         towers.forEach((tower) => {
                             if (tower.repair(s) == OK) {
                                 // console.log("Tower repairing structure with " + s.hits + " hits.");
@@ -73,12 +73,12 @@ export class TowerManager {
                             if (tower.store.getUsedCapacity(RESOURCE_ENERGY) > tower.store.getCapacity(RESOURCE_ENERGY) / 2) {
 
                                 // Repair only up to 100k
-                                if (structures[0].hits <= 100000) {
+                                 if (structures[0].hits <= 100000) {
                                     if (tower.repair(structures[0]) == OK) {
                                         // console.log("Tower repairing structure with " + structures[0].hits + " hits.");
                                         repaired = true;
                                     }
-                                }
+                                 }
                             }
                         }
                     } else {
